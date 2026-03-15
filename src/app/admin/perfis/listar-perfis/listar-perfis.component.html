@@ -1,0 +1,38 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="fw-bold ">Perfis de Acesso</h1>
+        </div>
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <form [formGroup]="form" (submit)="query()" class="p-3">
+                    <div class="d-flex flex-row gap-2">
+                        <button type="button" class="btn btn-primary" [routerLink]="['/admin/perfis/form']">
+                            <i class="bi bi-plus-lg me-2"></i> Adicionar
+                        </button>
+                    </div>
+                </form>
+                <div class="px-3 table-responsive">
+                    <table-template [total]="data.total" [loading]="loading" [paginacaoAtiva]="true">
+                        <table class="table table-borderless table-hover border-bottom">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Nome</th>
+                                    <th class="text-end">Criação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of data.lista" class="cursor-pointer"
+                                    [routerLink]="['/admin/perfis/form']" [queryParams]="{ id: item._id }">
+                                    <td>{{item.nome}}</td>
+                                    <td class="text-end">{{item.criado_por?.usuario | userInfo}} em {{item.criado_por?.data_hora | date: 'dd/MM/yy HH:mm'}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </table-template>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

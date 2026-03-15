@@ -1,0 +1,332 @@
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row row-gap-3">
+        <div class="col-12 col-md-6">
+            <h1 class="fw-bold mb-0">
+                <i class="bi bi-speedometer2 me-2"></i>
+                Dashboard
+            </h1>
+        </div>
+        <div class="col-12 col-md-6">
+            <form [formGroup]="form" (ngSubmit)="query()">
+                <div class="row g-2">
+                    <div class="col-12 col-md-3">
+                        <div ngbDropdown class="d-inline-block w-100">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" id="dropdownPeriodo" ngbDropdownToggle>
+                                <i class="bi bi-calendar-event me-1"></i>
+                                Período
+                            </button>
+                            <div ngbDropdownMenu aria-labelledby="dropdownPeriodo">
+                                <button ngbDropdownItem (click)="setPeriodo('7dias')">Últimos 7 dias</button>
+                                <button ngbDropdownItem (click)="setPeriodo('15dias')">Últimos 15 dias</button>
+                                <button ngbDropdownItem (click)="setPeriodo('30dias')">Últimos 30 dias</button>
+                                <button ngbDropdownItem (click)="setPeriodo('mesAtual')">Mês Atual</button>
+                                <button ngbDropdownItem (click)="setPeriodo('mesPassado')">Mês Passado</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-5 col-md-3">
+                        <input type="date" class="form-control" formControlName="data_inicial">
+                    </div>
+                    <div class="col-5 col-md-3">
+                        <input type="date" class="form-control" formControlName="data_final">
+                    </div>
+                    <div class="col-2 col-md-3">
+                        <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Backdrop -->
+    <div class="loading-backdrop" *ngIf="loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+    </div>
+
+    <ng-container *ngIf="empty && !loading">
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Nenhum dado disponível para exibir. Aguarde os dados ficarem disponíveis
+        </div>
+    </ng-container>
+
+    <!-- Dashboard Content -->
+    <ng-container *ngIf="dashboardAdministrativo">
+        <hr class="my-4">
+        
+        <!-- Período -->
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-calendar-range me-2"></i>
+            <strong>Período:</strong> {{ dashboardAdministrativo.periodo }}
+        </div>
+
+        <!-- Cards de Resumo -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded me-3">
+                                <i class="bi bi-cart-check text-primary fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-0">Total de Vendas</h6>
+                                <h3 class="mb-0 fw-bold">{{ dashboardAdministrativo.dados.totalVendas }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-info bg-opacity-10 p-3 rounded me-3">
+                                <i class="bi bi-currency-dollar text-info fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-0">Total Faturado</h6>
+                                <h3 class="mb-0 fw-bold text-info">{{ formatarValor(dashboardAdministrativo.dados.totalFaturado) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-success bg-opacity-10 p-3 rounded me-3">
+                                <i class="bi bi-cash-stack text-success fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-0">Total Recebido</h6>
+                                <h3 class="mb-0 fw-bold text-success">{{ formatarValor(dashboardAdministrativo.dados.totalRecebido) }}</h3>
+                                <small class="text-muted">{{ getPercentualRecebido().toFixed(1) }}% do faturado</small>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" [style.width.%]="getPercentualRecebido()"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Faturamento Diário -->
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">
+                            <i class="bi bi-graph-up me-2"></i>
+                            Faturamento e Recebimento Diário
+                        </h5>
+                        <div style="height: 300px;">
+                            <canvas baseChart
+                                [data]="lineChartData"
+                                [options]="lineChartOptions"
+                                [type]="lineChartType">
+                            </canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rentabilidade por Produto -->
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">
+                            <i class="bi bi-box-seam me-2"></i>
+                            Rentabilidade por Produto
+                        </h5>
+                        
+                        <!-- Cards para cada produto -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-6 col-xl-4" *ngFor="let produto of dashboardAdministrativo.dados.listaRentabilidade">
+                                <div class="card border h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">{{ produto.produtoNome }}</h6>
+                                                <span class="badge bg-secondary">{{ produto.produtoSigla }}</span>
+                                            </div>
+                                            <span [class]="'badge fs-6 ' + (produto.margemLucro > 5 ? 'bg-success' : produto.margemLucro > 0 ? 'bg-warning' : 'bg-secondary')">
+                                                {{ produto.margemLucro.toFixed(2) }}%
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <small class="text-muted d-block">Quantidade Vendida</small>
+                                            <strong>{{ produto.qtdVendido.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</strong>
+                                        </div>
+                                        
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Vendido</small>
+                                                <strong class="text-info">{{ formatarValor(produto.totalVendido) }}</strong>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Custo</small>
+                                                <strong class="text-danger">{{ formatarValor(produto.totalCusto) }}</strong>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="border-top pt-2">
+                                            <small class="text-muted d-block">Lucro Bruto</small>
+                                            <strong [class]="'fs-5 ' + (produto.lucro > 0 ? 'text-success' : 'text-secondary')">{{ formatarValor(produto.lucro) }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card de Total -->
+                        <div class="card bg-light border-0">
+                            <div class="card-body">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-6 col-md-3">
+                                        <small class="text-muted d-block">Total Vendido</small>
+                                        <strong class="text-info">{{ formatarValor(getTotalVendido()) }}</strong>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <small class="text-muted d-block">Custo Total</small>
+                                        <strong class="text-danger">{{ formatarValor(getTotalCusto()) }}</strong>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <small class="text-muted d-block">Lucro Total</small>
+                                        <strong [class]="getTotalLucro() > 0 ? 'text-success' : 'text-secondary'">{{ formatarValor(getTotalLucro()) }}</strong>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <small class="text-muted d-block">Margem</small>
+                                        <span [class]="'badge fs-5 ' + (getMargemLucroTotal() > 5 ? 'bg-success' : getMargemLucroTotal() > 0 ? 'bg-warning' : 'bg-secondary')">
+                                            {{ getMargemLucroTotal().toFixed(2) }}%
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ranking de Clientes -->
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">
+                            <i class="bi bi-trophy me-2"></i>
+                            Top 10 Clientes
+                        </h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-12" *ngFor="let cliente of dashboardAdministrativo.dados.rankingClientes; let i = index">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <span *ngIf="i === 0" class="badge bg-warning fs-6">
+                                                        <i class="bi bi-trophy-fill"></i> 1º
+                                                    </span>
+                                                    <span *ngIf="i === 1" class="badge bg-secondary fs-6">
+                                                        <i class="bi bi-trophy-fill"></i> 2º
+                                                    </span>
+                                                    <span *ngIf="i === 2" class="badge bg-secondary fs-6">
+                                                        <i class="bi bi-trophy-fill"></i> 3º
+                                                    </span>
+                                                    <span *ngIf="i > 2" class="badge bg-light text-dark fs-6">{{ i + 1 }}º</span>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0 fw-bold">{{ cliente.clienteNome }}</h6>
+                                                    <small class="text-muted">{{ cliente.totalVendas }} venda(s)</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Total Comprado</small>
+                                                <strong class="text-info">{{ formatarValor(cliente.totalComprado) }}</strong>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Total Recebido</small>
+                                                <strong class="text-success">{{ formatarValor(cliente.totalRecebido) }}</strong>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <small class="text-muted">Aproveitamento</small>
+                                                <strong>{{ cliente.aproveitamentoCliente.toFixed(1) }}%</strong>
+                                            </div>
+                                            <div class="progress" style="height: 12px;">
+                                                <div class="progress-bar" 
+                                                     [class]="cliente.aproveitamentoCliente > 70 ? 'bg-success' : cliente.aproveitamentoCliente > 30 ? 'bg-warning' : 'bg-danger'" 
+                                                     [style.width.%]="cliente.aproveitamentoCliente">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <!-- Atalhos -->
+    <ng-container>
+        <hr>
+        <div class="row row-gap-3 mb-3">
+            <div class="col-12 mb-2">
+                <h5 class="fw-bold">
+                    <i class="bi bi-lightning-fill me-2"></i>
+                    Atalhos Rápidos
+                </h5>
+            </div>
+            <div class="col-6 col-lg-4" *ngFor="let item of quick_menu">
+                <div class="card border-0 shadow-sm h-100 atalho-card" (click)="navigateTo(item.link)">
+                    <div class="card-body d-flex flex-column">
+                        <div class="mb-3">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded mb-3 d-inline-block">
+                                <i class="bi bi-clipboard-plus text-primary fs-3"></i>
+                            </div>
+                            <h5 class="card-title mb-1">{{ item.label }}</h5>
+                            <p class="card-text text-muted mb-0">
+                                {{ item.description }}
+                            </p>
+                        </div>
+                        <a [routerLink]="item.link" class="btn btn-primary w-100 mt-auto">
+                            Acessar
+                            <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+</div>
+
+<!-- Botão de Ajuda Flutuante -->
+<button 
+    class="btn btn-info floating-help-btn shadow-lg" 
+    routerLink="/admin/tutorial"
+    title="Acessar Tutorial do Sistema">
+    <i class="bi bi-question-circle"></i>
+</button>

@@ -1,0 +1,4 @@
+<div class="spinner-border spinner-border-sm" role="status" *ngIf="loading">
+    <span class="visually-hidden">Loading...</span>
+</div>
+<ng-content *ngIf="!loading"></ng-content>

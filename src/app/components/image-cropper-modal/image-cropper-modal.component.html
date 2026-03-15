@@ -1,0 +1,27 @@
+<div class="modal-header">
+  <h5 class="modal-title">Recortar Imagem</h5>
+  <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button>
+</div>
+<div class="modal-body text-center">
+  <div class="d-flex justify-content-center">
+    <canvas #canvas
+      (mousedown)="onMouseDown($event)"
+      (mousemove)="onMouseMove($event)"
+      (mouseup)="onMouseUp()"
+      (mouseleave)="onMouseUp()"
+      (touchstart)="onTouchStart($event)"
+      (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd()"
+      (touchcancel)="onTouchEnd()"
+      style="border: 1px solid #ccc; touch-action: none; cursor: crosshair;">
+    </canvas>
+    <div class="ms-4">
+      <h6>Preview:</h6>
+      <canvas #previewCanvas style="border: 1px solid #ccc;"></canvas>
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cancelar</button>
+  <button type="button" class="btn btn-primary" (click)="crop()">Salvar</button>
+</div>

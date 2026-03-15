@@ -1,0 +1,400 @@
+<div class="modal-header">
+  <h5 class="modal-title">{{ cadastroRealizado ? 'Cadastro Realizado com Sucesso!' : 'Cadastro de Pessoa' }}</h5>
+  <button type="button" class="btn-close" aria-label="Close" (click)="cadastroRealizado ? fecharModal() : dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  
+  <!-- Tela de Sucesso -->
+  <div *ngIf="cadastroRealizado && dadosAcesso" class="success-screen" id="dados-acesso">
+    <div class="alert alert-success d-print-none" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      <strong>Cadastro realizado com sucesso!</strong>
+    </div>
+
+    <div class="alert alert-warning d-print-none" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <strong>IMPORTANTE:</strong> Anote ou salve estas informações. Você precisará delas para acessar o sistema.
+    </div>
+
+    <div class="dados-acesso-card p-4 border rounded bg-light">
+      <h5 class="text-center mb-4 fw-bold text-primary">Dados de Acesso ao Sistema</h5>
+      
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="info-box p-3 bg-white rounded border">
+            <label class="text-muted small mb-1">Código de Ativação</label>
+            <h3 class="mb-0 fw-bold text-success">{{ dadosAcesso.codigo_acesso }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <h6 class="mb-3 fw-bold">Dados da Empresa</h6>
+      <div class="mb-3">
+        <label class="text-muted small mb-1">Nome/Razão Social</label>
+        <p class="mb-0 fw-semibold">{{ dadosAcesso.empresa?.razao_social || dadosAcesso.empresa?.nome }}</p>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="text-muted small mb-1">Documento</label>
+          <p class="mb-0">{{ dadosAcesso.empresa?.documento | cpfCnpj }}</p>
+        </div>
+        <div class="col-md-6">
+          <label class="text-muted small mb-1">E-mail</label>
+          <p class="mb-0">{{ dadosAcesso.empresa?.email }}</p>
+        </div>
+      </div>
+
+      <hr>
+
+      <h6 class="mb-3 fw-bold">Dados do Usuário</h6>
+      <div class="mb-3">
+        <label class="text-muted small mb-1">Nome Completo</label>
+        <p class="mb-0 fw-semibold">{{ dadosAcesso.usuario?.nome }}</p>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="text-muted small mb-1">Username</label>
+          <p class="mb-0 fw-bold text-primary">{{ dadosAcesso.usuario?.username }}</p>
+        </div>
+        <div class="col-md-6">
+          <label class="text-muted small mb-1">E-mail</label>
+          <p class="mb-0">{{ dadosAcesso.usuario?.email }}</p>
+        </div>
+      </div>
+
+      <div class="alert alert-info mt-4 d-print-none">
+        <small>
+          <i class="bi bi-info-circle me-2"></i>
+          Use o <strong>Código de Ativação</strong> na tela inicial e depois faça login com seu <strong>Username</strong> e <strong>Senha</strong> cadastrada.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulário de Cadastro -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!cadastroRealizado">
+    
+    <!-- Tipo de Documento -->
+    <div class="mb-3">
+      <label class="form-label">Tipo de Pessoa <span class="text-danger">*</span></label>
+      <div class="btn-group w-100" role="group">
+        <input type="radio" class="btn-check" name="tipo_documento" id="tipo_cpf" value="cpf" formControlName="tipo_documento" checked>
+        <label class="btn btn-outline-primary" for="tipo_cpf">CPF - Pessoa Física</label>
+        
+        <input type="radio" class="btn-check" name="tipo_documento" id="tipo_cnpj" value="cnpj" formControlName="tipo_documento">
+        <label class="btn btn-outline-primary" for="tipo_cnpj">CNPJ - Pessoa Jurídica</label>
+      </div>
+    </div>
+
+    <!-- Documento CPF/CNPJ -->
+    <div class="mb-3">
+      <label class="form-label" for="documento">
+        {{ tipoPessoa === 'cpf' ? 'CPF' : 'CNPJ' }} <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="documento" 
+        formControlName="documento"
+        [placeholder]="tipoPessoa === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'"
+        [mask]="tipoPessoa == 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'"
+        [class.is-invalid]="form.get('documento')?.invalid && form.get('documento')?.touched">
+      <div *ngIf="form.get('documento')?.invalid && form.get('documento')?.touched" class="invalid-feedback">
+        {{ tipoPessoa === 'cpf' ? 'CPF' : 'CNPJ' }} é obrigatório.
+      </div>
+    </div>
+
+    <!-- Nome Completo -->
+    <div class="mb-3">
+      <label class="form-label" for="nome_completo">
+        Nome Completo <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="nome_completo" 
+        formControlName="nome_completo"
+        placeholder="Digite o nome completo"
+        [class.is-invalid]="form.get('nome_completo')?.invalid && form.get('nome_completo')?.touched">
+      <div *ngIf="form.get('nome_completo')?.invalid && form.get('nome_completo')?.touched" class="invalid-feedback">
+        Nome completo é obrigatório.
+      </div>
+    </div>
+
+    <!-- Razão Social (apenas para CNPJ) -->
+    <div class="mb-3" *ngIf="tipoPessoa === 'cnpj'">
+      <label class="form-label" for="razao_social">
+        Razão Social <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="razao_social" 
+        formControlName="razao_social"
+        placeholder="Digite a razão social"
+        [class.is-invalid]="form.get('razao_social')?.invalid && form.get('razao_social')?.touched">
+      <div *ngIf="form.get('razao_social')?.invalid && form.get('razao_social')?.touched" class="invalid-feedback">
+        Razão social é obrigatória para CNPJ.
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="mb-3">
+      <label class="form-label" for="email">
+        E-mail <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="email" 
+        class="form-control" 
+        id="email" 
+        formControlName="email"
+        placeholder="exemplo@email.com"
+        [class.is-invalid]="form.get('email')?.invalid && form.get('email')?.touched">
+      <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched" class="invalid-feedback">
+        <span *ngIf="form.get('email')?.errors?.['required']">E-mail é obrigatório.</span>
+        <span *ngIf="form.get('email')?.errors?.['email']">E-mail inválido.</span>
+      </div>
+    </div>
+
+    <!-- Telefone -->
+    <div class="mb-3">
+      <label class="form-label" for="telefone">
+        Telefone (WhatsApp de preferência) <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="telefone" 
+        formControlName="telefone"
+        mask="(00) 00000-0000"
+        placeholder="(00) 00000-0000"
+        [class.is-invalid]="form.get('telefone')?.invalid && form.get('telefone')?.touched">
+      <div *ngIf="form.get('telefone')?.invalid && form.get('telefone')?.touched" class="invalid-feedback">
+        Telefone é obrigatório.
+      </div>
+    </div>
+
+    <hr>
+    <h6 class="mb-3">Dados de Primeiro Acesso</h6>
+
+    <!-- Nome de Usuario -->
+    <div class="mb-3">
+      <label class="form-label" for="nome_usuario">
+        Nome completo do usuário <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="nome_usuario" 
+        formControlName="nome_usuario"
+        placeholder="Digite o nome completo do usuário"
+        [class.is-invalid]="form.get('nome_usuario')?.invalid && form.get('nome_usuario')?.touched">
+      <div *ngIf="form.get('nome_usuario')?.invalid && form.get('nome_usuario')?.touched" class="invalid-feedback">
+        Nome completo do usuário é obrigatório.
+      </div>
+    </div>
+
+    <!-- Username -->
+    <div class="mb-3">
+      <label class="form-label" for="username">
+        Username <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="username" 
+        formControlName="username"
+        (input)="sanitizeUsername()"
+        placeholder="Somente letras minúsculas e números, sem espaços"
+        [class.is-invalid]="form.get('username')?.invalid && form.get('username')?.touched">
+      <small class="form-text text-muted">Sem letras maiúsculas, pontos, traços ou espaços</small>
+      <div *ngIf="form.get('username')?.invalid && form.get('username')?.touched" class="invalid-feedback">
+        <span *ngIf="form.get('username')?.errors?.['required']">Username é obrigatório.</span>
+        <span *ngIf="form.get('username')?.errors?.['pattern']">Username deve conter apenas letras minúsculas e números, sem letras maiúsculas, pontos, traços ou espaços.</span>
+      </div>
+    </div>
+
+    <!-- Senha -->
+    <div class="mb-3">
+      <label class="form-label" for="senha">
+        Senha de Acesso <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="password" 
+        class="form-control" 
+        id="senha" 
+        formControlName="senha"
+        placeholder="Mínimo 6 caracteres"
+        autocomplete="new-password"
+        [class.is-invalid]="form.get('senha')?.invalid && form.get('senha')?.touched">
+      <div *ngIf="form.get('senha')?.invalid && form.get('senha')?.touched" class="invalid-feedback">
+        <span *ngIf="form.get('senha')?.errors?.['required']">Senha é obrigatória.</span>
+        <span *ngIf="form.get('senha')?.errors?.['minlength']">Senha deve ter no mínimo 6 caracteres.</span>
+      </div>
+    </div>
+
+    <hr>
+    <h6 class="mb-3">Endereço</h6>
+
+    <!-- CEP -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label" for="cep">
+          CEP <span class="text-danger">*</span>
+        </label>
+        <div class="input-group">
+          <input 
+            type="text" 
+            class="form-control" 
+            id="cep" 
+            formControlName="cep"
+            placeholder="00000-000"
+            mask="00000-000"
+            (blur)="buscarCep()"
+            [class.is-invalid]="form.get('cep')?.invalid && form.get('cep')?.touched">
+          <button class="btn btn-outline-secondary" type="button" (click)="buscarCep()" [disabled]="loadingCep">
+            <span *ngIf="loadingCep" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            <i *ngIf="!loadingCep" class="bi bi-search"></i> Buscar
+          </button>
+          <div *ngIf="form.get('cep')?.invalid && form.get('cep')?.touched" class="invalid-feedback">
+            CEP é obrigatório.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logradouro -->
+    <div class="mb-3">
+      <label class="form-label" for="logradouro">
+        Logradouro <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="logradouro" 
+        formControlName="logradouro"
+        placeholder="Rua, Avenida, etc."
+        [class.is-invalid]="form.get('logradouro')?.invalid && form.get('logradouro')?.touched">
+      <div *ngIf="form.get('logradouro')?.invalid && form.get('logradouro')?.touched" class="invalid-feedback">
+        Logradouro é obrigatório.
+      </div>
+    </div>
+
+    <!-- Número e Complemento -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="form-label" for="numero">
+          Número <span class="text-danger">*</span>
+        </label>
+        <input 
+          type="text" 
+          class="form-control" 
+          id="numero" 
+          formControlName="numero"
+          placeholder="Nº"
+          [class.is-invalid]="form.get('numero')?.invalid && form.get('numero')?.touched">
+        <div *ngIf="form.get('numero')?.invalid && form.get('numero')?.touched" class="invalid-feedback">
+          Número é obrigatório.
+        </div>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label" for="complemento">
+          Complemento
+        </label>
+        <input 
+          type="text" 
+          class="form-control" 
+          id="complemento" 
+          formControlName="complemento"
+          placeholder="Apto, Bloco, etc.">
+      </div>
+    </div>
+
+    <!-- Cidade e Estado -->
+    <div class="row mb-3">
+      <div class="col-md-8">
+        <label class="form-label" for="cidade">
+          Cidade <span class="text-danger">*</span>
+        </label>
+        <input 
+          type="text" 
+          class="form-control" 
+          id="cidade" 
+          formControlName="cidade"
+          placeholder="Cidade"
+          [class.is-invalid]="form.get('cidade')?.invalid && form.get('cidade')?.touched">
+        <div *ngIf="form.get('cidade')?.invalid && form.get('cidade')?.touched" class="invalid-feedback">
+          Cidade é obrigatória.
+        </div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="estado">
+          Estado <span class="text-danger">*</span>
+        </label>
+        <select 
+          class="form-select" 
+          id="estado" 
+          formControlName="estado"
+          [class.is-invalid]="form.get('estado')?.invalid && form.get('estado')?.touched">
+          <option value="">UF</option>
+          <option value="AC">AC</option>
+          <option value="AL">AL</option>
+          <option value="AP">AP</option>
+          <option value="AM">AM</option>
+          <option value="BA">BA</option>
+          <option value="CE">CE</option>
+          <option value="DF">DF</option>
+          <option value="ES">ES</option>
+          <option value="GO">GO</option>
+          <option value="MA">MA</option>
+          <option value="MT">MT</option>
+          <option value="MS">MS</option>
+          <option value="MG">MG</option>
+          <option value="PA">PA</option>
+          <option value="PB">PB</option>
+          <option value="PR">PR</option>
+          <option value="PE">PE</option>
+          <option value="PI">PI</option>
+          <option value="RJ">RJ</option>
+          <option value="RN">RN</option>
+          <option value="RS">RS</option>
+          <option value="RO">RO</option>
+          <option value="RR">RR</option>
+          <option value="SC">SC</option>
+          <option value="SP">SP</option>
+          <option value="SE">SE</option>
+          <option value="TO">TO</option>
+        </select>
+        <div *ngIf="form.get('estado')?.invalid && form.get('estado')?.touched" class="invalid-feedback">
+          Estado é obrigatório.
+        </div>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<div class="modal-footer">
+  <!-- Botões para tela de sucesso -->
+  <div *ngIf="cadastroRealizado" class="w-100 d-flex justify-content-between d-print-none">
+    <button type="button" class="btn btn-outline-primary" (click)="imprimirDados()" [disabled]="loadingPdf">
+      <span *ngIf="loadingPdf" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      <i *ngIf="!loadingPdf" class="bi bi-file-pdf me-2"></i>
+      {{ loadingPdf ? 'Gerando PDF...' : 'Baixar PDF' }}
+    </button>
+    <button type="button" class="btn btn-success" (click)="fecharModal()">
+      <i class="bi bi-check-lg me-2"></i>Concluir
+    </button>
+  </div>
+
+  <!-- Botões para formulário -->
+  <ng-container *ngIf="!cadastroRealizado">
+    <button type="button" class="btn btn-secondary" (click)="dismiss()">Cancelar</button>
+    <button type="button" class="btn btn-primary" (click)="onSubmit()" [disabled]="loading">
+      <text-spinner [loading]="loading">Salvar</text-spinner>
+    </button>
+  </ng-container>
+</div>

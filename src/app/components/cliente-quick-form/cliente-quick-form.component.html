@@ -1,0 +1,62 @@
+<div class="d-flex flex-column p-3">
+
+    <!-- Título -->
+    <h5 class="mb-3">{{labelForm}}</h5>
+    <p class="text-muted" *ngIf="!!labelInstruction">{{labelInstruction}}</p>
+    <!-- Formulário de CPF -->
+    <form [formGroup]="documentoForm" (ngSubmit)="buscar()" *ngIf="!mostraFormularioExtra">
+        <div class="mb-3">
+            <label for="documento-query" class="form-label">Documento</label>
+            <input type="text" class="form-control" formControlName="documento" id="documento-query"
+                placeholder="Digite o CPF" />
+        </div>
+        <inline-error [error]="error_modal_1"></inline-error>
+        <div class="d-flex flex-column gap-2">
+            <button type="submit" class="btn btn-primary w-100" [disabled]="loading || documentoForm.invalid">
+                <text-spinner [loading]="loading">Buscar</text-spinner>
+            </button>
+            <button type="button" class="btn btn-danger w-100" (click)="dismissModal()" [disabled]="loading">
+                <text-spinner [loading]="loading">Fechar</text-spinner>
+            </button>
+        </div>
+    </form>
+
+    <!-- Formulário de cadastro (exibido apenas se não encontrou) -->
+    <div *ngIf="mostraFormularioExtra">
+        <form [formGroup]="clienteForm" (ngSubmit)="cadastrar()" class="d-flex flex-column gap-2">
+            <div>
+                <label for="documento" class="form-label">Documento</label>
+                <input type="text" class="form-control" formControlName="documento" id="documento">
+            </div>
+            <div>
+                <label for="nome" class="form-label">Nome</label>
+                <input type="text" class="form-control" formControlName="nome" id="nome" />
+            </div>
+
+            <div>
+                <label for="telefone" class="form-label">Telefone</label>
+                <input type="tel" class="form-control" formControlName="telefone" id="telefone"
+                    mask="(00) 00000-0000" />
+            </div>
+
+            <div class="mb-3">
+                <label for="data_nascimento" class="form-label">Data de Nascimento</label>
+                <input type="date" class="form-control" formControlName="data_nascimento" id="data_nascimento" />
+            </div>
+
+            <inline-error [error]="error_modal_2"></inline-error>
+
+
+            <div class="d-grid gap-1">
+                <button type="submit" class="btn btn-success" [disabled]="clienteForm.invalid">
+                    <text-spinner [loading]="loading || loading_cadastro">
+                        {{buttonActionLabel}}
+                    </text-spinner>
+                </button>
+                <button type="button" class="btn btn-danger" (click)="back1()">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

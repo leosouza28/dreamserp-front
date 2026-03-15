@@ -1,0 +1,67 @@
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2>Relatório de Fornecimento</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-body border-0 p-3 shadow">
+                <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                    <div class="row mb-3">
+                        <div class="col-md-12 d-flex align-items-center">
+                            <label class="form-label me-3 mb-0 ">Parâmetro da data:</label>
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="radio" id="data_venda" value="data_venda"
+                                    formControlName="param_data" />
+                                <label class="form-check-label " for="data_venda">Data da Venda</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-lg-6">
+                            <label for="cliente-input" class="form-label">Cliente</label>
+                            <select formControlName="cliente" class="form-select">
+                                <option value="TODOS">TODOS</option>
+                                <option [value]="item._id" *ngFor="let item of clientes">{{item.nome}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-lg-3">
+                            <label for="data_inicial" class="form-label ">Data inicial</label>
+                            <input type="date" id="data_inicial" class="form-control" formControlName="data_inicial">
+                        </div>
+                        <div class="col-lg-3">
+                            <label for="data_final" class="form-label ">Data final</label>
+                            <input type="date" id="data_final" class="form-control" formControlName="data_final">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12 d-flex align-items-center">
+                            <label class="form-label me-3 mb-0 ">Formato de saída:</label>
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="radio" id="saida_html" value="html"
+                                    formControlName="output" />
+                                <label class="form-check-label " for="saida_html">Tela (Pop-up)</label>
+                            </div>
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="radio" id="saida_pdf" value="pdf"
+                                    formControlName="output" />
+                                <label class="form-check-label " for="saida_pdf">PDF</label>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary ">
+                                <text-spinner [loading]="loading">Gerar relatório</text-spinner>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

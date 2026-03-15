@@ -1,0 +1,60 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="fw-bold ">{{form['controls']['_id']['value'] ? 'Editar perfil' : 'Adicionar perfil'}}
+            </h1>
+        </div>
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <p class="text-muted px-3 pt-3">Os campos com * são obrigatórios</p>
+                <form [formGroup]="form" (ngSubmit)="onSubmit()" class="px-3 pb-3">
+                    <div class="row g-3">
+                        <!-- Nome do Perfil -->
+                        <div class="col-12 col-md-6">
+                            <label for="nome" class="form-label">Nome do Perfil *</label>
+                            <input type="text" class="form-control" id="nome" formControlName="nome"
+                                placeholder="Ex: Administrador, Gerente, Vendedor">
+                            <div class="text-danger small mt-1"
+                                *ngIf="form.get('nome')?.invalid && form.get('nome')?.touched">
+                                O nome do perfil é obrigatório
+                            </div>
+                        </div>
+
+                        <!-- Permissões -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Permissões</label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div *ngFor="let grupo of permissoesAgrupadas; let i = index"
+                                        [class.mt-3]="i > 0">
+                                        <h6 class="fw-bold text-primary mb-2">{{grupo.grupo}}</h6>
+                                        <div class="ms-3">
+                                            <div class="form-check" *ngFor="let permissao of grupo.permissoes">
+                                                <input class="form-check-input" type="checkbox"
+                                                    [id]="permissao.key"
+                                                    [checked]="isPermissaoSelecionada(permissao.key)"
+                                                    (change)="togglePermissao(permissao.key)">
+                                                <label class="form-check-label" [for]="permissao.key">
+                                                    {{permissao.description}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success" [disabled]="form.invalid || loading">
+                                <text-spinner [loading]="loading">Salvar</text-spinner>
+                            </button>
+                            <button type="button" class="btn btn-danger ms-2" (click)="back()"
+                                [disabled]="loading">Cancelar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

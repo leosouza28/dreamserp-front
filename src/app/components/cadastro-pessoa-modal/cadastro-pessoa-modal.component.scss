@@ -1,0 +1,68 @@
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+.btn-group {
+  .btn {
+    flex: 1;
+  }
+}
+
+label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.invalid-feedback {
+  display: block;
+}
+
+// Estilos para a tela de sucesso
+.success-screen {
+  .dados-acesso-card {
+    margin: 1rem 0;
+  }
+
+  .info-box {
+    text-align: center;
+    
+    h3 {
+      font-size: 2rem;
+      letter-spacing: 0.3rem;
+    }
+  }
+}
+
+// Estilos para impressão
+@media print {
+  .modal-header,
+  .modal-footer,
+  .d-print-none {
+    display: none !important;
+  }
+
+  .modal-body {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .dados-acesso-card {
+    border: 2px solid #000 !important;
+    page-break-inside: avoid;
+  }
+
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -1,0 +1,70 @@
+<!-- Header -->
+<header class="border-bottom border-primary shadow d-flex align-items-center bg-primary fredoka ">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="logo-header cursor-pointer" [routerLink]="['/']"></div>
+        </div>
+    </div>
+</header>
+
+<div class="min-container">
+    <router-outlet></router-outlet>
+</div>
+
+
+<footer class="">
+    <div class="container p-3">
+        <div class="row g-3">
+            <div class="col-12 col-lg-4">
+
+                <div class="d-flex flex-column gap-3">
+
+                    <div class="d-flex flex-column">
+                        <p class="mb-2 fw-bold ">Links úteis</p>
+                        <div class="d-flex flex-column gap-1">
+                            <a [routerLink]="['/politica-privacidade']" class="text-dark">Política de privacidade</a>
+                            <a [routerLink]="['/termos-uso']" class="text-dark">Termos de uso</a>
+                            <a [routerLink]="['/ajuda']" class="text-dark">Preciso de ajuda</a>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column">
+                        <p class="mb-2 fw-bold ">Redes sociais e WhatsApp</p>
+                        <div class="d-flex flex-row gap-3">
+                            <a href="https://www.facebook.com/balneario.dohirley.3" target="_blank">
+                                <i class="bi bi-facebook bi-color" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <a href="https://www.instagram.com/parkaquaticoestreladalva" target="_blank">
+                                <i class="bi bi-instagram bi-color" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <a href="https://wa.me/send/?phone=5591980783686&text=Olá%2C+vim+do+site+e+gostaria+de+mais+informações&type=phone_number&app_absent=0"
+                                target="_blank">
+                                <i class="bi bi-whatsapp bi-color" style="font-size: 1.5rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-12 col-lg-8">
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex flex-column">
+                        <p class="mb-2 fw-bold ">Adelino Material de Construção</p>
+                        <div class="d-flex flex-column gap-1">
+                            <p class="mb-0"><strong>CNPJ:</strong> 00.000.000/0000-00</p>
+                            <p class="mb-0"><strong>Funcionamento:</strong> todos os dias, de 08:00 às 18:00.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column">
+                        <p class="mb-2 fw-bold ">Nossa localização</p>
+                        <div class="d-flex flex-row gap-3">
+                            <p class="mb-0"><strong>Endereço:</strong> Avenida Barão do Rio Branco, 948,
+                                Castanhal, Pará, Brasil.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>

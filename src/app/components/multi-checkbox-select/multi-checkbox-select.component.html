@@ -1,0 +1,17 @@
+<div class="dropdown w-100" [class.show]="open">
+    <!-- Botão -->
+    <button type="button" class="btn btn-dark w-100 d-flex justify-content-between align-items-center"
+        (click)="toggleDropdown()" [disabled]="disabled">
+        <span>{{ summary }}</span>
+        <i class="bi bi-caret-down-fill"></i>
+    </button>
+
+    <!-- Menu -->
+    <div class="dropdown-menu w-100" [class.show]="open" (click)="$event.stopPropagation()">
+        <label *ngFor="let opt of options" class="dropdown-item d-flex align-items-center gap-2">
+            <input class="form-check-input" type="checkbox" [checked]="isChecked(opt.value)"
+                (change)="toggleValue(opt.value, $event)" tabindex="-1" />
+            {{ opt.label }}
+        </label>
+    </div>
+</div>

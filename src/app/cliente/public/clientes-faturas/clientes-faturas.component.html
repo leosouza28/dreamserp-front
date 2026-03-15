@@ -1,0 +1,443 @@
+<div class="container-fluid py-4"
+    style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); min-height: 100vh;">
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-3 text-dark">Carregando suas faturas...</p>
+    </div>
+
+    <!-- Conteúdo -->
+    <div *ngIf="!loading && dados" class="row justify-content-center">
+        <div class="col-12 col-lg-10 col-xl-8">
+
+            <!-- Cabeçalho com Logo -->
+            <div class="card border-0 shadow-lg mb-4">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-auto" *ngIf="dados.empresa?.logo">
+                            <img [src]="dados.empresa.logo" alt="Logo" class="img-fluid"
+                                style="max-height: 80px; max-width: 150px; object-fit: contain;">
+                        </div>
+                        <div class="col">
+                            <h4 class="mb-1 fw-bold">{{dados.empresa?.nome || 'Empresa'}}</h4>
+                            <p class="mb-0 text-muted small">
+                                <span *ngIf="dados.empresa?.documento">{{dados.empresa.documento | cpfCnpj}}</span>
+                                <span *ngIf="dados.empresa?.endereco?.cidade"> •
+                                    {{dados.empresa.endereco.cidade}}/{{dados.empresa.endereco.estado}}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Cliente -->
+            <div class="card border-0 shadow-lg mb-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-person-circle me-2"></i>Seus Dados
+                    </h5>
+                    <div class="row">
+                        <div class="col-12">
+                            <h4 class="fw-bold mb-2">{{dados.pessoa?.nome}}</h4>
+                            <div class="d-flex flex-wrap gap-3 text-muted">
+                                <span>
+                                    <i class="bi bi-card-text me-1"></i>
+                                    {{dados.pessoa?.documento | cpfCnpj}}
+                                </span>
+                                <span *ngIf="dados.pessoa?.telefone_principal?.valor">
+                                    <i class="bi bi-telephone me-1"></i>
+                                    {{dados.pessoa.telefone_principal.valor | phone}}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saldo Devedor em Destaque -->
+            <!-- <div class="card border-0 shadow-lg mb-4" [class.bg-danger]="dados.saldo_devedor > 0"
+                [class.bg-success]="dados.saldo_devedor <= 0"
+                style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                <div class="card-body p-4 text-white text-center">
+                    <h6 class="text-white-50 mb-2">SALDO DEVEDOR</h6>
+                    <h1 class="display-3 fw-bold mb-0">{{dados.saldo_devedor | moneyBrl}}</h1>
+                </div>
+            </div> -->
+
+            <div class="card border-0 shadow-lg mb-4 py-3">
+                <table class="table table-hover mb-0">
+                    <tbody>
+                        <tr class="bg-warning bg-opacity-10">
+                            <td style="width: 40px; vertical-align: middle;" class="text-center fw-bold fs-5">A</td>
+                            <td class="py-3" style="vertical-align: middle;">
+                                <div class="d-flex align-items-center">
+                                    <strong>Pendências</strong>
+                                </div>
+                            </td>
+                            <td class="text-end py-3 fw-bold fs-5">{{dados.valor_pendencias | moneyBrl}}
+                            </td>
+                        </tr>
+                        <tr class="bg-primary bg-opacity-10">
+                            <td style="width: 40px; vertical-align: middle;" class="text-center fw-bold fs-5">B</td>
+                            <td class="py-3" style="vertical-align: middle;">
+                                <div class="d-flex align-items-center">
+                                    <strong>Pedidos</strong>
+                                </div>
+                            </td>
+                            <td class="text-end py-3 fw-bold fs-5">{{dados.valor_total | moneyBrl}}</td>
+                        </tr>
+                        <tr class="table-active ">
+                            <td style="width: 40px; vertical-align: middle;" class="text-center fw-bold fs-4 text-info">C</td>
+                            <td class="py-3" style="vertical-align: middle;">
+                                <div class="d-flex align-items-center text-info">
+                                    <strong>Total (A+B)</strong>
+                                </div>
+                            </td>
+                            <td class="text-end py-3 fw-bold fs-4 text-info">{{(dados.valor_pendencias +
+                                dados.valor_total) | moneyBrl}}</td>
+                        </tr>
+                         <tr class="bg-success bg-opacity-10">
+                            <td style="width: 40px; vertical-align: middle;" class="text-center fw-bold fs-5">D</td>
+                            <td class="py-3" style="vertical-align: middle;">
+                                <div class="d-flex align-items-center">
+                                    <strong>Recebido</strong>
+                                </div>
+                            </td>
+                            <td class="text-end py-3 fw-bold fs-5 text-success">{{dados.valor_recebido * -1 | moneyBrl}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 40px; vertical-align: middle;" class="text-center"></td>
+                            <td class="py-2" style="vertical-align: middle;">
+                                <div class="d-flex align-items-center">
+                                    <span class="text-muted">Em Atraso</span>
+                                </div>
+                            </td>
+                            <td class="text-end py-2 fw-bold text-muted">
+                                {{dados.valor_total_em_atraso | moneyBrl}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 40px; vertical-align: middle;" class="text-center"></td>
+                            <td class="py-2" style="vertical-align: middle;">
+                                <div class="d-flex align-items-center">
+                                    <span class="text-muted">Em Aberto</span>
+                                </div>
+                            </td>
+                            <td class="text-end py-2 fw-bold text-muted">{{dados.valor_total_em_aberto | moneyBrl}}
+                            </td>
+                        </tr>
+                        <tr class="table-active"
+                            [class.bg-danger]="dados.saldo_devedor > 0" [class.bg-success]="dados.saldo_devedor <= 0"
+                            [class.bg-opacity-10]="true">
+                            <td style="width: 40px; vertical-align: middle;" class="text-center fw-bold fs-4"
+                                [class.text-danger]="dados.saldo_devedor > 0"
+                                [class.text-success]="dados.saldo_devedor <= 0">E</td>
+                            <td class="py-3" style="vertical-align: middle;">
+                                <div class="d-flex align-items-center">
+                                    <strong [class.text-danger]="dados.saldo_devedor > 0"
+                                        [class.text-success]="dados.saldo_devedor <= 0">
+                                        Saldo Devedor (C-D)
+                                    </strong>
+                                </div>
+                            </td>
+                            <td class="text-end py-3 fw-bold fs-4" [class.text-danger]="dados.saldo_devedor > 0"
+                                [class.text-success]="dados.saldo_devedor <= 0">
+                                {{dados.saldo_devedor | moneyBrl}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Resumo Financeiro -->
+            <!-- <div class="row g-3 mb-4">
+                <div class="col-6 col-md-2">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-3">
+                            <div class="text-danger mb-2">
+                                <i class="bi bi-exclamation-circle fs-1"></i>
+                            </div>
+                            <h6 class="text-muted small mb-1">Pendências</h6>
+                            <h5 class="fw-bold text-danger mb-0">{{dados.valor_pendencias | moneyBrl}}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-3">
+                            <div class="text-primary mb-2">
+                                <i class="bi bi-cash-stack fs-1"></i>
+                            </div>
+                            <h6 class="text-muted small mb-1">Total&nbsp;Pedidos</h6>
+                            <h5 class="fw-bold mb-0">{{dados.valor_total | moneyBrl}}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-3">
+                            <div class="text-success mb-2">
+                                <i class="bi bi-check-circle-fill fs-1"></i>
+                            </div>
+                            <h6 class="text-muted small mb-1">Recebido</h6>
+                            <h5 class="fw-bold text-success mb-0">{{dados.valor_recebido | moneyBrl}}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-3">
+                            <div class="text-warning mb-2">
+                                <i class="bi bi-clock-history fs-1"></i>
+                            </div>
+                            <h6 class="text-muted small mb-1">Em Aberto</h6>
+                            <h5 class="fw-bold text-warning mb-0">{{dados.valor_total_em_aberto | moneyBrl}}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-3">
+                            <div class="text-danger mb-2">
+                                <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+                            </div>
+                            <h6 class="text-muted small mb-1">Atrasado</h6>
+                            <h5 class="fw-bold text-danger mb-0">{{dados.valor_total_em_atraso | moneyBrl}}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- Filtro de Faturas -->
+            <div class="card border-0 shadow-lg mb-4">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-center align-items-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="apenasEmAberto"
+                                [(ngModel)]="apenasEmAberto" (change)="getItem(id)">
+                            <label class="form-check-label fw-bold text-primary fs-5" for="apenasEmAberto">
+                                <i class="bi bi-funnel me-2"></i>Mostrar Apenas Faturas Em Aberto
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histórico de Vendas -->
+            <div class="card border-0 shadow-lg mb-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-receipt me-2"></i>Histórico de Vendas
+                    </h5>
+
+                    <div *ngFor="let venda of dados.lista_produtos_por_data; let i = index" class="mb-3">
+                        <div class="card border" [class]="'border-' + getStatusClass(venda)">
+                            <!-- Cabeçalho da Venda -->
+                            <div class="card-header" [class]="'bg-' + getStatusClass(venda) + ' bg-opacity-10'"
+                                style="cursor: pointer;" (click)="toggleGroup(venda.data)">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>
+                                            <i class="bi bi-calendar3 me-2"></i>
+                                            {{venda.data | dateSimple}}
+                                        </strong>
+                                        <span class="badge ms-2" [class]="'bg-' + getStatusClass(venda)">
+                                            {{getStatusLabel(venda)}}
+                                        </span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">{{venda.valor_total | moneyBrl}}</div>
+                                        <small class="text-muted" *ngIf="venda.valor_em_aberto > 0">
+                                            Aberto: {{venda.valor_em_aberto | moneyBrl}}
+                                        </small>
+                                        <i class="bi ms-2" [class.bi-chevron-down]="!isGroupExpanded(venda.data)"
+                                            [class.bi-chevron-up]="isGroupExpanded(venda.data)"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Detalhes dos Produtos -->
+                            <div class="card-body" *ngIf="isGroupExpanded(venda.data)">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Produto</th>
+                                                <th class="text-end">Qtd</th>
+                                                <th class="text-end">Valor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let item of agruparProdutos(venda.produtos)">
+                                                <td>
+                                                    <div class="fw-bold">{{item.produto?.nome || '-'}}</div>
+                                                    <div *ngIf="item.pesos && item.pesos.length > 0"
+                                                        class="small text-muted">
+                                                        <span>({{item.pesos.length}})</span>
+                                                        {{item.pesos.join(' • ')}}
+                                                    </div>
+                                                </td>
+                                                <td class="text-end">
+                                                    <div>
+                                                        {{item.quantidade.toFixed(2).replace('.', ',')}}
+                                                        {{item.unidade_saida}}
+                                                    </div>
+                                                    <small class="text-muted">R${{item.valor_unitario |
+                                                        moneyBrl}}</small>
+                                                </td>
+                                                <td class="text-end fw-bold">
+                                                    R${{item.valor_total | moneyBrl}}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <td colspan="2" class="text-end fw-bold">TOTAL:</td>
+                                                <td class="text-end fw-bold">{{venda.valor_total | moneyBrl}}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pendências Financeiras -->
+            <div class="card border-0 shadow-lg mb-4"
+                *ngIf="dados.lista_pendencias_avulsas && dados.lista_pendencias_avulsas.length > 0">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Pendências
+                    </h5>
+
+                    <div *ngFor="let pendencia of dados.lista_pendencias_avulsas; let i = index" class="mb-3">
+                        <div class="card border" [class.border-warning]="pendencia.status === 'PENDENTE'"
+                            [class.border-success]="pendencia.status === 'PAGA'"
+                            [class.border-info]="pendencia.status !== 'PENDENTE' && pendencia.status !== 'PAGA'">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <h6 class="mb-0 fw-bold">{{pendencia.identificador}}</h6>
+                                            <span class="badge ms-2"
+                                                [class.bg-warning]="pendencia.status === 'PENDENTE'"
+                                                [class.bg-success]="pendencia.status === 'PAGA'"
+                                                [class.bg-info]="pendencia.status !== 'PENDENTE' && pendencia.status !== 'PAGA'">
+                                                {{pendencia.status}}
+                                            </span>
+                                        </div>
+                                        <div class="small text-muted mb-2">
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            Emissão: {{pendencia.data_emissao | dateSimple}}
+                                        </div>
+                                        <div *ngIf="pendencia.valor_recebido > 0" class="small text-success">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Valor Recebido: {{pendencia.valor_recebido | moneyBrl}}
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h5 class="mb-0 fw-bold" [class.text-warning]="pendencia.status === 'PENDENTE'"
+                                            [class.text-success]="pendencia.status === 'PAGA'"
+                                            [class.text-info]="pendencia.status !== 'PENDENTE' && pendencia.status !== 'PAGA'">
+                                            {{pendencia.valor_total | moneyBrl}}
+                                        </h5>
+                                        <small *ngIf="pendencia.valor_recebido > 0 && pendencia.status !== 'PAGA'"
+                                            class="text-muted d-block">
+                                            Restante: {{(pendencia.valor_total - pendencia.valor_recebido) | moneyBrl}}
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Histórico de Lançamentos -->
+                                <div *ngIf="pendencia.lancamentos && pendencia.lancamentos.length > 0" 
+                                     class="mt-3 pt-3 border-top">
+                                    <h6 class="mb-2 text-muted small">
+                                        <i class="bi bi-clock-history me-2"></i>Histórico de Pagamentos
+                                    </h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <tbody>
+                                                <tr *ngFor="let lancamento of pendencia.lancamentos" 
+                                                    class="small">
+                                                    <td class="ps-0" *ngIf="!lancamento.estornado">
+                                                        <i class="bi bi-calendar3 me-1 text-muted"></i>
+                                                        {{lancamento.data_pagamento | dateSimple}}
+                                                    </td>
+                                                    <td *ngIf="!lancamento.estornado">
+                                                        <i class="bi bi-credit-card me-1 text-muted"></i>
+                                                        {{lancamento.forma_pagamento}}
+                                                    </td>
+                                                    <td class="text-end fw-bold text-success" *ngIf="!lancamento.estornado">
+                                                        {{lancamento.valor | moneyBrl}}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histórico de Pagamentos -->
+            <div class="card border-0 shadow-lg mb-4"
+                *ngIf="dados.lista_recebimentos && dados.lista_recebimentos.length > 0">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-cash-coin me-2"></i>Histórico de Pagamentos
+                    </h5>
+
+                    <div class="list-group">
+                        <div *ngFor="let recebimento of dados.lista_recebimentos"
+                            class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <strong>{{recebimento.data_pagamento | dateSimple}}</strong>
+                                        <span class="badge bg-info ms-2">{{recebimento.forma_pagamento?.nome}}</span>
+                                    </div>
+                                    <div class="small text-muted">
+                                        <div *ngFor="let lanc of recebimento.lancamentos" class="mb-1">
+                                            <i class="bi bi-arrow-right me-1"></i>
+                                            Pagamento em {{lanc.venda?.data | dateSimple}}:
+                                            <strong>{{lanc.valor | moneyBrl}}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <h5 class="mb-0 text-success fw-bold">{{recebimento.valor | moneyBrl}}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rodapé -->
+            <div class="text-center text-muted py-3">
+                <small>
+                    <i class="bi bi-shield-check me-1"></i>
+                    Visualização segura e atualizada
+                </small>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Mensagem quando não há dados -->
+    <div *ngIf="!loading && !dados" class="text-center py-5">
+        <div class="text-muted">
+            <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+            <h4>Nenhuma fatura encontrada</h4>
+            <p>Não foi possível carregar as informações da sua conta.</p>
+        </div>
+    </div>
+</div>

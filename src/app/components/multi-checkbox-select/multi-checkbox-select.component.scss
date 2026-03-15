@@ -1,0 +1,5 @@
+// Limita altura quando houver muitas opções
+.dropdown-menu {
+  max-height: 248px;
+  overflow-y: auto;
+}

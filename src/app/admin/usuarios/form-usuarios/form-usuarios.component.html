@@ -1,0 +1,140 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="fw-bold ">
+                {{form['controls']['_id']['value'] ? 'Editar usuário' : 'Adicionar usuário'}}
+            </h1>
+        </div>
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <p class="text-muted  px-3 pt-3">Os campos com * são obrigatórios</p>
+                <form [formGroup]="form" (ngSubmit)="onSubmit()" class="px-3 pb-3">
+                    <div class="row  row-gap-3">
+                        <div class="col-12">
+                            <label for="dados-pessoais" class="form-label fw-bold">Dados pessoais</label>
+                        </div>
+                        <!-- Documento -->
+                        <div class="col-12 col-md-4">
+                            <div class="form-floating">
+                                <input type="documento" class="form-control" id="documento" formControlName="documento"
+                                    placeholder="Documento" mask="000.000.000-00">
+                                <label for="documento">Documento (CPF) *</label>
+                            </div>
+                        </div>
+
+                        <!-- Nome -->
+                        <div class="col-12 col-md-8">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="nome" formControlName="nome"
+                                    placeholder="Nome">
+                                <label for="nome">Nome *</label>
+                            </div>
+                        </div>
+
+                        <!-- Senha -->
+                        <div class="col-12 col-md-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="username" formControlName="username"
+                                    placeholder="Senha">
+                                <label for="senha">Nome de Usuário *</label>
+                            </div>
+                        </div>
+                        <!-- Senha -->
+                        <div class="col-12 col-md-4">
+                            <div class="form-floating">
+                                <input type="password" class="form-control" id="senha" formControlName="senha"
+                                    placeholder="Senha">
+                                <label for="senha">Senha *</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <div class="form-floating">
+                                <input type="email" class="form-control" id="email" formControlName="email"
+                                    placeholder="Email">
+                                <label for="email">Email</label>
+                            </div>
+                        </div>
+
+
+                        <!-- Telefones -->
+                        <div class="col-12">
+                            <label for="telefones" class="form-label fw-bold">Telefones</label>
+                            <div formArrayName="telefones">
+                                <div *ngFor="let telefone of telefonesArray.controls; let i = index" [formGroupName]="i"
+                                    class="row row-gap-2 mb-2">
+                                    <div class="col-4">
+                                        <select class="form-control" placeholder="Tipo" formControlName="tipo">
+                                            <option value="" disabled>Selecione</option>
+                                            <option value="CELULAR">Celular</option>
+                                            <option value="CEL_WHATSAPP">Cel + WhatsApp</option>
+                                            <option value="APENAS_WHATSAPP">Apenas WhatsApp</option>
+                                            <option value="TEL_FIXO">Tel. Fixo</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="text" class="form-control" placeholder="Número"
+                                            formControlName="valor"
+                                            [mask]="telefone.value.tipo === 'TEL_FIXO' ? '(00) 0000-0000' : '(00) 00000-0000'">
+                                    </div>
+                                    <div class="col-2">
+                                        <input type="checkbox" formControlName="principal" class="form-check-input me-2"
+                                            id="principal-{{i}}">
+                                        <label for="principal-{{i}}" class="form-check-label">Principal</label>
+                                    </div>
+                                    <div class="col-2">
+                                        <button type="button" class="btn btn-danger"
+                                            (click)="removeTelefone(i)">Remover</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-primary" (click)="addTelefone()">Adicionar
+                                    Telefone</button>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="perfil" class="form-check-label">Perfil de Acesso</label>
+                        </div>
+                        <div class="col-10">
+                            <select class="form-control" placeholder="Perfil" formControlName="perfil">
+                                <option value="">Selecione</option>
+                                <option *ngFor="let item of perfis_options" [value]="item._id">{{item.nome}}</option>
+                            </select>
+                        </div>
+                        <div class="col-2">
+                            <input type="checkbox" formControlName="perfil_ativo" class="form-check-input me-2"
+                                id="ativo-perfil">
+                            <label for="ativo-perfil" class="form-check-label">Ativo</label>
+                        </div>
+
+                        <!-- Botão de Enviar -->
+                        <div class="col-12 ">
+                            <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+                                <text-spinner [loading]="loading">Salvar</text-spinner>
+                            </button>
+                            <button type="button" class="btn btn-danger ms-2" (click)="back()">Cancelar</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="card-footer" *ngIf="!!user_data?._id">
+                    <div class="row">
+                        <div class="col-12 col-lg-4">
+                            <p class="text-muted fw-bold mb-0">Criado por</p>
+                            <p class="text-muted mb-0" *ngIf="!!user_data?.criado_por?.data_hora">
+                                {{user_data?.criado_por?.usuario | userInfo}} em {{user_data?.criado_por?.data_hora |
+                                date: 'dd/MM/yy HH:mm'}}</p>
+                            <p class="text-muted mb-0" *ngIf="!user_data?.criado_por?.data_hora">---</p>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <p class="text-muted fw-bold mb-0">Alterado por</p>
+                            <p class="text-muted mb-0" *ngIf="!!user_data?.atualizado_por?.data_hora">
+                                {{user_data?.atualizado_por?.usuario | userInfo}} em
+                                {{user_data?.atualizado_por?.data_hora | date: 'dd/MM/yy HH:mm'}}</p>
+                            <p class="text-muted mb-0" *ngIf="!user_data?.atualizado_por?.data_hora">---</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

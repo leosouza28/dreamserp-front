@@ -1,0 +1,30 @@
+.logo-header {
+  background-image: url("/assets/imgs/logo-header.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  border-radius: 1rem;
+  height: 70px;
+  width: 138px;
+  background-color: #1d2d69;
+
+  @media (max-width: 768px) {
+    height: 60px;
+    width: 150px;
+  }
+}
+
+.bg-header {
+  height: 5.3rem;
+}
+
+.min-container {
+  min-height: 90vh;
+}
+
+footer {
+  background: var(--bs-light);
+  min-height: 10vh;
+  color: var(--bs-dark) !important;
+  border-top: 5px var(--bs-black) solid;
+}
