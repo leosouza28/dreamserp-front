@@ -40,6 +40,7 @@ export class FormUsuariosComponent implements OnInit {
         })
       ]),
       perfil_id: this.fb.control(""),
+      is_vendedor: this.fb.control(false)
     });
   }
 
@@ -115,6 +116,7 @@ export class FormUsuariosComponent implements OnInit {
       this.telefonesArray.push(telefoneForm);
     }
     this.form.get('perfil_id')?.setValue(usuario?.perfil?._id || "");
+    this.form.get('is_vendedor')?.setValue(usuario?.is_vendedor || false);
 
   }
 
@@ -127,6 +129,8 @@ export class FormUsuariosComponent implements OnInit {
       email: "",
       senha: "",
       status: "ATIVO",
+      perfil_id: "",
+      is_vendedor: false
     })
     this.form.get('senha')?.setValidators(Validators.required);
     this.form.get('senha')?.updateValueAndValidity();

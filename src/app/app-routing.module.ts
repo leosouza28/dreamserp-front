@@ -14,6 +14,8 @@ import { ClienteContainerComponent } from "./cliente/cliente-container/cliente-c
 import { HomeComponent } from "./cliente/home/home.component";
 import { AuthGuard } from './services/auth-guard.service';
 import { UsuarioRefreshTokenComponent } from "./usuario-refresh-token/usuario-refresh-token.component";
+import { ComissoesAgenciaComponent } from "./admin/comissoes/comissoes-agencia/comissoes-agencia.component";
+import { ComissoesVendedoresComponent } from "./admin/comissoes/comissoes-vendedores/comissoes-vendedores.component";
 
 
 const routes: Routes = [
@@ -80,6 +82,19 @@ const routes: Routes = [
           {
             path: "form",
             component: FormPerfisComponent
+          }
+        ]
+      },
+      {
+        path: 'comissoes',
+        children: [
+          {
+            path: "agencia",
+            component: ComissoesAgenciaComponent
+          },
+          {
+            path: "vendedores",
+            component: ComissoesVendedoresComponent
           }
         ]
       },

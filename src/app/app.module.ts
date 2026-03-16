@@ -48,6 +48,8 @@ import { PhonePipe } from './pipes/phone.pipe';
 import { UserAgentPipe } from './pipes/user-agent.pipe';
 import { UserInfoPipe } from './pipes/user-info.pipe';
 import { UsuarioRefreshTokenComponent } from './usuario-refresh-token/usuario-refresh-token.component';
+import { ComissoesAgenciaComponent } from './admin/comissoes/comissoes-agencia/comissoes-agencia.component';
+import { ComissoesVendedoresComponent } from './admin/comissoes/comissoes-vendedores/comissoes-vendedores.component';
 
 registerLocaleData(localePt, 'pt-BR');
 
@@ -89,6 +91,8 @@ LOAD_WASM('assets/wasm/ngx-scanner-qrcode.wasm').subscribe();
     FormPessoasComponent,
     NextOnEnterDirective,
     MultiCheckboxSelectComponent,
+    ComissoesAgenciaComponent,
+    ComissoesVendedoresComponent,
   ],
   imports: [
     BrowserModule,

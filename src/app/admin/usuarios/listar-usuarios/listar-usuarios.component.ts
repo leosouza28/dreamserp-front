@@ -24,7 +24,7 @@ export class ListarUsuariosComponent {
     this.form = this.fb.group({
       q: this.fb.control(""),
       page: this.fb.control("1"),
-      perpage: this.fb.control("10"),
+      perpage: this.fb.control("20"),
       status: this.fb.control("TODOS"),
       nivel_acesso: this.fb.control("TODOS"),
     });

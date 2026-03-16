@@ -99,13 +99,19 @@
                         </div>
 
                         <div class="col-12">
-                            <label for="perfil" class="form-check-label">Perfil de Acesso</label>
+                            <label for="perfil" class="form-check-label fw-bold">Perfil de Acesso</label>
                         </div>
                         <div class="col-12">
                             <select class="form-control" formControlName="perfil_id">
                                 <option value="">Selecione</option>
                                 <option *ngFor="let item of perfis_options" [value]="item._id">{{item.nome}}</option>
                             </select>
+                        </div>
+
+                        <!-- Checkbox is vendedor -->
+                        <div class="col-12">
+                            <input type="checkbox" formControlName="is_vendedor" class="form-check-input me-2" id="is_vendedor">
+                            <label for="is_vendedor" class="form-check-label">Vendedor</label>
                         </div>
 
                         <!-- Botão de Enviar -->

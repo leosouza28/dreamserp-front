@@ -151,14 +151,20 @@ export class AdminContainerComponent implements OnInit {
         open: false
       },
       {
-        icon: 'bi bi-hammer me-2',
-        nome: 'Comissão',
+        icon: 'bi bi-percent me-2',
+        nome: 'Comissões',
         submenu: [
           {
-            scopes: ["usuarios.leitura"],
-            icon: 'bi bi-people me-2',
-            nome: 'Vale das Minas',
-            link: '/admin/usuarios/listar'
+            scopes: ["comissoes.comissoes_agencia_leitura"],
+            icon: 'bi bi-percent me-2',
+            nome: 'Comissões da Agência',
+            link: '/admin/comissoes/agencia'
+          },
+          {
+            scopes: ["comissoes.comissoes_vendedores_leitura"],
+            icon: 'bi bi-percent me-2',
+            nome: 'Comissões dos Vendedores',
+            link: '/admin/comissoes/vendedores'
           },
         ],
         open: false
