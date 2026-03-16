@@ -11,12 +11,12 @@ body {
 }
 
 /* Customizing Bootstrap primary color */
-$primary: #0F6B4A; // Verde Frigorífico
-$secondary: #2F4F9F; // Azul Track
-$success: #1E7F5C; // Verde Médio
-$info: #3F6AD8; // Azul Médio
-$warning: #FFB020; // Amarelo técnico (alerta)
-$danger: #C62828; // Vermelho controle
+$primary: #684696; // Verde Frigorífico
+$secondary: #A04995; // Azul Track
+$success: #5FC1C7; // Verde Médio
+$info: #8BD0E0; // Azul Médio
+$warning: #E8BD65; // Amarelo técnico (alerta)
+// $danger: #DF4B93; // Vermelho controle
 $light: #F2F5F4; // Cinza claro
 $dark: #102822; // Preto esverdeado
 
@@ -39,7 +39,7 @@ $btn-font-weight: 600;
 $input-bg: #FFFFFF;
 $input-border-color: #D9E1DE;
 $input-focus-border-color: $primary;
-$input-focus-box-shadow: 0 0 0 0.15rem rgba(15, 107, 74, 0.25);
+$input-focus-box-shadow: 0 0 0 0.15rem rgba(104, 70, 150, 0.25);
 
 // Cards
 $card-border-radius: 0.75rem;

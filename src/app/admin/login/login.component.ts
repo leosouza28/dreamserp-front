@@ -1,13 +1,12 @@
 import { Component, isDevMode, OnInit } from '@angular/core';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApiService } from '../../services/api.service';
-import { SessaoService } from 'src/app/services/sessao.service';
 import { Router } from '@angular/router';
-import { EndpointsService } from 'src/app/services/endpoints.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { CadastroPessoaModalComponent } from 'src/app/components/cadastro-pessoa-modal/cadastro-pessoa-modal.component';
 import { AlertService } from 'src/app/services/alert.service';
+import { EndpointsService } from 'src/app/services/endpoints.service';
+import { SessaoService } from 'src/app/services/sessao.service';
+import { ApiService } from '../../services/api.service';
 
 
 

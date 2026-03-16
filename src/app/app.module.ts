@@ -28,8 +28,6 @@ import { AppComponent } from './app.component';
 import { ClienteContainerComponent } from './cliente/cliente-container/cliente-container.component';
 import { HomeComponent } from './cliente/home/home.component';
 import { AlertComponent } from './components/alert/alert.component';
-import { CadastroPessoaModalComponent } from './components/cadastro-pessoa-modal/cadastro-pessoa-modal.component';
-import { ClienteQuickFormComponent } from './components/cliente-quick-form/cliente-quick-form.component';
 import { ImageCropperModalComponent } from './components/image-cropper-modal/image-cropper-modal.component';
 import { IngressoCardComponent } from './components/ingresso-card/ingresso-card.component';
 import { InlineErrorComponent } from './components/inline-error/inline-error.component';
@@ -80,13 +78,11 @@ LOAD_WASM('assets/wasm/ngx-scanner-qrcode.wasm').subscribe();
     LogoffComponent,
     RenderBadgeComponent,
     NumericPadComponent,
-    ClienteQuickFormComponent,
     ClienteContainerComponent,
     IngressoCardComponent,
     AlertComponent,
     UsuarioRefreshTokenComponent,
     ImageCropperModalComponent,
-    CadastroPessoaModalComponent,
     DateFromNowPipe,
     PesoPipe,
     ListarPessoasComponent,

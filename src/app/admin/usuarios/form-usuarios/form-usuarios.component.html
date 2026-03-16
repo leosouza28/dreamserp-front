@@ -1,5 +1,5 @@
 <div class="container-fluid">
-    <div class="row">
+    <div class="row row-gap-3">
         <div class="col-12">
             <h1 class="fw-bold ">
                 {{form['controls']['_id']['value'] ? 'Editar usuário' : 'Adicionar usuário'}}
@@ -16,9 +16,9 @@
                         <!-- Documento -->
                         <div class="col-12 col-md-4">
                             <div class="form-floating">
-                                <input type="documento" class="form-control" id="documento" formControlName="documento"
-                                    placeholder="Documento" mask="000.000.000-00">
-                                <label for="documento">Documento (CPF) *</label>
+                                <input type="text" class="form-control" id="documento" formControlName="documento"
+                                    placeholder="Documento" mask="CPF_CNPJ">
+                                <label for="documento">Documento (CPF/CNPJ)</label>
                             </div>
                         </div>
 
@@ -26,25 +26,31 @@
                         <div class="col-12 col-md-8">
                             <div class="form-floating">
                                 <input type="text" class="form-control" id="nome" formControlName="nome"
-                                    placeholder="Nome">
+                                    placeholder="Nome"
+                                    [class.is-invalid]="form.get('nome')?.invalid && form.get('nome')?.touched">
                                 <label for="nome">Nome *</label>
+                                <div class="invalid-feedback" *ngIf="form.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
                             </div>
                         </div>
 
-                        <!-- Senha -->
+                        <!-- Username -->
                         <div class="col-12 col-md-4">
                             <div class="form-floating">
                                 <input type="text" class="form-control" id="username" formControlName="username"
-                                    placeholder="Senha">
-                                <label for="senha">Nome de Usuário *</label>
+                                    placeholder="Nome de Usuário"
+                                    [class.is-invalid]="form.get('username')?.invalid && form.get('username')?.touched">
+                                <label for="username">Nome de Usuário *</label>
+                                <div class="invalid-feedback" *ngIf="form.get('username')?.errors?.['required']">Nome de usuário é obrigatório.</div>
                             </div>
                         </div>
                         <!-- Senha -->
                         <div class="col-12 col-md-4">
                             <div class="form-floating">
                                 <input type="password" class="form-control" id="senha" formControlName="senha"
-                                    placeholder="Senha">
-                                <label for="senha">Senha *</label>
+                                    placeholder="Senha"
+                                    [class.is-invalid]="form.get('senha')?.invalid && form.get('senha')?.touched">
+                                <label for="senha">Senha{{form['controls']['_id']['value'] ? '' : ' *'}}</label>
+                                <div class="invalid-feedback" *ngIf="form.get('senha')?.errors?.['required']">Senha é obrigatória.</div>
                             </div>
                         </div>
 
@@ -95,16 +101,11 @@
                         <div class="col-12">
                             <label for="perfil" class="form-check-label">Perfil de Acesso</label>
                         </div>
-                        <div class="col-10">
-                            <select class="form-control" placeholder="Perfil" formControlName="perfil">
+                        <div class="col-12">
+                            <select class="form-control" formControlName="perfil_id">
                                 <option value="">Selecione</option>
                                 <option *ngFor="let item of perfis_options" [value]="item._id">{{item.nome}}</option>
                             </select>
-                        </div>
-                        <div class="col-2">
-                            <input type="checkbox" formControlName="perfil_ativo" class="form-check-input me-2"
-                                id="ativo-perfil">
-                            <label for="ativo-perfil" class="form-check-label">Ativo</label>
                         </div>
 
                         <!-- Botão de Enviar -->

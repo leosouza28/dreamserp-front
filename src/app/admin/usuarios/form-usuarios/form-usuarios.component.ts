@@ -27,8 +27,8 @@ export class FormUsuariosComponent implements OnInit {
     this.form = this.fb.group({
       _id: this.fb.control(""),
       documento: this.fb.control(""),
-      username: this.fb.control(""),
-      nome: this.fb.control(""),
+      username: this.fb.control("", Validators.required),
+      nome: this.fb.control("", Validators.required),
       email: this.fb.control(""),
       senha: this.fb.control(""),
       status: this.fb.control("ATIVO"),
@@ -39,8 +39,7 @@ export class FormUsuariosComponent implements OnInit {
           principal: this.fb.control(false)
         })
       ]),
-      perfil: this.fb.control(""),
-      perfil_ativo: this.fb.control(false),
+      perfil_id: this.fb.control(""),
     });
   }
 
@@ -60,7 +59,7 @@ export class FormUsuariosComponent implements OnInit {
     if (this.loading) return;
     this.loading = true;
     try {
-      let user = await this.endpointService.getUsuario(usuario_id);
+      let user = await this.endpointService.getUsuarioById(usuario_id);
       this.setValues(user);
     } catch (error) {
 
@@ -97,9 +96,10 @@ export class FormUsuariosComponent implements OnInit {
   }
 
   setValues(usuario: any) {
-    console.log(usuario);
     this.user_data = usuario;
     this.form.get('_id')?.setValue(usuario._id);
+    this.form.get('senha')?.clearValidators();
+    this.form.get('senha')?.updateValueAndValidity();
     this.form.get('documento')?.setValue(usuario.documento);
     this.form.get('nome')?.setValue(usuario.nome);
     this.form.get('username')?.setValue(usuario.username);
@@ -114,8 +114,7 @@ export class FormUsuariosComponent implements OnInit {
       });
       this.telefonesArray.push(telefoneForm);
     }
-    this.form.get('perfil')?.setValue(usuario?._empresa?.perfil?._id || "");
-    this.form.get('perfil_ativo')?.setValue(usuario?._empresa?.ativo || false);
+    this.form.get('perfil_id')?.setValue(usuario?.perfil?._id || "");
 
   }
 
@@ -129,6 +128,8 @@ export class FormUsuariosComponent implements OnInit {
       senha: "",
       status: "ATIVO",
     })
+    this.form.get('senha')?.setValidators(Validators.required);
+    this.form.get('senha')?.updateValueAndValidity();
     this.limparArrayTelefones();
     setTimeout(() => {
       this.addTelefone();
@@ -160,6 +161,10 @@ export class FormUsuariosComponent implements OnInit {
 
   async onSubmit() {
     if (this.loading) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.loading = true;
     try {
       await this.endpointService.postUsuarios(this.form.value);

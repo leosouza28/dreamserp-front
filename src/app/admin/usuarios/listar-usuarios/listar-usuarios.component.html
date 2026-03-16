@@ -42,7 +42,7 @@
                                     [routerLink]="['/admin/usuarios/form']" [queryParams]="{ id: item._id }">
                                     <td>{{item.nome}}</td>
                                     <td>{{item.documento | cpfCnpj}}</td>
-                                    <td>{{item.empresa?.perfil?.nome || "Não definido"}}</td>
+                                    <td>{{item?.perfil?.nome || "Não definido"}}</td>
                                     <td class="text-end">
                                         {{item.criado_por?.usuario | userInfo}} {{item.criado_por?.data_hora | dateFromNow}}
                                     </td>

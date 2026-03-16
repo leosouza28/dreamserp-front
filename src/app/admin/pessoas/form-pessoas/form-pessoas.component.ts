@@ -21,8 +21,8 @@ export class FormPessoasComponent implements OnInit {
   isModal: boolean = false;
 
   docTypes = [
-    { value: 'CPF', label: 'CPF' },
-    { value: 'CNPJ', label: 'CNPJ' }
+    { value: 'cpf', label: 'CPF' },
+    { value: 'cnpj', label: 'CNPJ' }
   ];
 
   tipos = [
@@ -56,8 +56,8 @@ export class FormPessoasComponent implements OnInit {
   ) {
     this.form = this.fb.group({
       _id: this.fb.control(''),
-      tipos: this.fb.control([], [Validators.required]),
-      doc_type: this.fb.control('CPF', [Validators.required]),
+      tipos: this.fb.control([]),
+      doc_type: this.fb.control('cpf'),
       documento: this.fb.control('', []),
       nome: this.fb.control('', [Validators.required]),
       razao_social: this.fb.control(''),
@@ -66,7 +66,6 @@ export class FormPessoasComponent implements OnInit {
       sexo: this.fb.control(''),
       status: this.fb.control('ATIVO', [Validators.required]),
       telefones: this.fb.array([]),
-      dias_cobranca: this.fb.control(''),
       endereco: this.fb.group({
         cep: this.fb.control(''),
         logradouro: this.fb.control(''),

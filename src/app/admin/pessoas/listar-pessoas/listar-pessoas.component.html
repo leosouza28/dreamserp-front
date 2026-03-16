@@ -1,7 +1,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <h1 class="fw-bold ">Clientes e Fornecedores</h1>
+            <h1 class="fw-bold ">Pessoas</h1>
         </div>
         <div class="col-12">
             <div class="card border-0 shadow-sm">
@@ -17,15 +17,6 @@
                             <input type="text" class="form-control" id="buscar-input" formControlName="q"
                                 placeholder="Nome da pessoa">
                         </div>
-                         <div class="col-12 col-lg-6">
-                            <label for="tipo-input" class="form-label">Tipo</label>
-                            <select id="tipo-input" formControlName="tipo" class="form-control">
-                                <option value="">TODOS</option>
-                                <option value="FORNECEDOR">FORNECEDOR</option>
-                                <option value="CLIENTE">CLIENTE</option>
-                            </select>
-                        </div>
-                       
                     </div>
 
                     <div class="d-flex flex-row gap-2">
@@ -40,7 +31,6 @@
                             <thead class="table-dark">
                                 <tr>
                                     <th>Nome</th>
-                                    <th>Tipo</th>
                                     <th>CPF/CNPJ</th>
                                     <th class="text-end">
                                         Criado por
@@ -51,7 +41,6 @@
                                 <tr *ngFor="let item of data.lista" class="cursor-pointer"
                                     [routerLink]="['/admin/pessoas/form']" [queryParams]="{ id: item._id }">
                                     <td>{{item.nome}}</td>
-                                    <td>{{item.tipos}}</td>
                                     <td>{{item.documento |cpfCnpj}}</td>
                                     <td class="text-end">
                                         {{item.criado_por?.usuario | userInfo}} {{item.criado_por.data_hora |

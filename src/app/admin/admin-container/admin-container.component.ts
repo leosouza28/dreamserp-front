@@ -63,7 +63,8 @@ export class AdminContainerComponent implements OnInit {
       this.menu = this.menuItems.filter(item => item.default);
       return;
     } else {
-      let scopes: any = this.scopesEmpresaAtiva;
+      let scopes: any = this.scopesAtivos;
+      console.log(scopes);
       this.menu = this.menuItems.filter((item: any) => {
         if (item.default) return true;
         if (item.submenu) {
@@ -106,9 +107,9 @@ export class AdminContainerComponent implements OnInit {
     return 'Notification' in window;
   }
 
-  get scopesEmpresaAtiva(): string[] {
+  get scopesAtivos(): string[] {
     let user = this.sessao.getUser();
-    if (user.perfil && user.perfil.scopes) {
+    if (user.perfil.scopes?.length > 0) {
       return user.perfil.scopes;
     }
     return [];
@@ -125,14 +126,6 @@ export class AdminContainerComponent implements OnInit {
         default: true
       },
       {
-        icon: 'bi bi-mortarboard-fill me-2',
-        nome: 'Tutorial',
-        link: "/admin/tutorial",
-        submenu: null,
-        default: true
-      },
-
-      {
         icon: 'bi bi-hammer me-2',
         nome: 'Operacional',
         submenu: [
@@ -143,16 +136,35 @@ export class AdminContainerComponent implements OnInit {
             link: '/admin/usuarios/listar'
           },
           {
-            scopes: ["clientes.leitura"],
+            scopes: ["pessoas.leitura"],
             icon: 'bi bi-people me-2',
             nome: 'Pessoas',
             link: '/admin/pessoas/listar'
+          },
+          {
+            scopes: ["pessoas.leitura"],
+            icon: 'bi bi-people me-2',
+            nome: 'Vendedores',
+            link: '/admin/vendedores/listar'
           },
           {
             scopes: ["perfis.leitura"],
             icon: 'bi bi-person-lines-fill me-2',
             nome: 'Perfis de acesso',
             link: '/admin/perfis/listar'
+          },
+        ],
+        open: false
+      },
+      {
+        icon: 'bi bi-hammer me-2',
+        nome: 'Comissão',
+        submenu: [
+          {
+            scopes: ["usuarios.leitura"],
+            icon: 'bi bi-people me-2',
+            nome: 'Vale das Minas',
+            link: '/admin/usuarios/listar'
           },
         ],
         open: false
