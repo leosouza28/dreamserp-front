@@ -16,7 +16,8 @@ import { AuthGuard } from './services/auth-guard.service';
 import { UsuarioRefreshTokenComponent } from "./usuario-refresh-token/usuario-refresh-token.component";
 import { ComissoesAgenciaComponent } from "./admin/comissoes/comissoes-agencia/comissoes-agencia.component";
 import { ComissoesVendedoresComponent } from "./admin/comissoes/comissoes-vendedores/comissoes-vendedores.component";
-
+import { ListarCrmComponent } from './admin/crm/listar-crm/listar-crm.component';
+import { FormCrmComponent } from './admin/crm/form-crm/form-crm.component';
 
 const routes: Routes = [
   {
@@ -95,6 +96,20 @@ const routes: Routes = [
           {
             path: "vendedores",
             component: ComissoesVendedoresComponent
+          }
+        ]
+      },
+      {
+        path: 'crm',
+        canActivate: [AuthGuard],
+        children: [
+          {
+            path: 'listar',
+            component: ListarCrmComponent
+          },
+          {
+            path: 'form',
+            component: FormCrmComponent
           }
         ]
       },

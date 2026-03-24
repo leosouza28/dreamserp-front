@@ -142,6 +142,12 @@ export class AdminContainerComponent implements OnInit {
             link: '/admin/pessoas/listar'
           },
           {
+            scopes: ["crm.leitura"],
+            icon: 'bi bi-diagram-3 me-2',
+            nome: 'CRM',
+            link: '/admin/crm/listar'
+          },
+          {
             scopes: ["perfis.leitura"],
             icon: 'bi bi-person-lines-fill me-2',
             nome: 'Perfis de acesso',
