@@ -4,8 +4,8 @@
             <h1 class="fw-bold">CRM</h1>
         </div>
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <form [formGroup]="form" (submit)="query()" class="p-3">
+            <div class="card border-0 shadow-sm crm-list-card">
+                <form [formGroup]="form" (submit)="query()" class="p-3 crm-list-form">
                     <div class="row row-gap-3 mb-3">
                         <div class="col-12 col-lg-6">
                             <label class="form-label">Buscar por</label>
@@ -13,10 +13,50 @@
                                 placeholder="Nome ou documento">
                         </div>
                     </div>
-                    <div class="d-flex flex-row gap-2">
+                    <div class="d-flex flex-row flex-wrap align-items-start gap-2 crm-toolbar">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-search me-2"></i> Buscar
                         </button>
+                        <div class="position-relative crm-filter-anchor">
+                            <button type="button" class="btn btn-outline-secondary" title="Filtros"
+                                (click)="toggleFilterPanel($event)">
+                                <i class="bi bi-funnel"></i>
+                            </button>
+                            <div *ngIf="filterPanelOpen" class="crm-filter-panel" (click)="$event.stopPropagation()">
+                                <div class="crm-filter-panel-inner">
+                                    <h6 class="crm-filter-panel-title">
+                                        Filtrar por tags
+                                    </h6>
+                                    <div *ngIf="tagOptionsLoading" class="text-muted small py-2">
+                                        Carregando tags…
+                                    </div>
+                                    <div *ngIf="!tagOptionsLoading && tagCheckboxOptions.length === 0"
+                                        class="text-muted small py-2">
+                                        Nenhuma tag cadastrada nos CRMs.
+                                    </div>
+                                    <ul *ngIf="!tagOptionsLoading && tagCheckboxOptions.length > 0"
+                                        class="list-unstyled mb-0 crm-filter-tag-list">
+                                        <li *ngFor="let tag of tagCheckboxOptions" class="crm-filter-tag-item">
+                                            <label class="crm-filter-tag-label">
+                                                <input type="checkbox" class="form-check-input flex-shrink-0"
+                                                    [checked]="isDraftTagSelected(tag)"
+                                                    (change)="toggleDraftTag(tag, $any($event.target).checked)">
+                                                <span class="crm-filter-tag-text">{{ tag }}</span>
+                                            </label>
+                                        </li>
+                                    </ul>
+                                    <div class="crm-filter-panel-actions">
+                                        <button type="button" class="btn btn-primary" (click)="aplicarFiltros()">
+                                            Filtrar
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary"
+                                            (click)="limparFiltros()">
+                                            Limpar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <button type="button" class="btn btn-success"
                             [routerLink]="['/admin/crm/form']">
                             <i class="bi bi-plus-lg me-2"></i> Adicionar
