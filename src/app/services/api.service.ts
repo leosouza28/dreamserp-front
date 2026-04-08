@@ -15,7 +15,8 @@ export class ApiService {
     constructor(private http: HttpClient, private sessao: SessaoService, public router: Router) {
         // como pegar o ip local da minha maquina com angular
         // this.baseUrl = isDevMode() ? `http://${window.location.hostname}:8006` : 'https://api.parqueestreladalva.com.br';
-        this.baseUrl = isDevMode() ? `http://localhost:8009` : 'https://api.trackbeef.lsdevelopers.dev';
+        //this.baseUrl = isDevMode() ? `http://localhost:8009` : 'https://api.trackbeef.lsdevelopers.dev';
+        this.baseUrl = isDevMode() ? `http://localhost:8009` : 'https://dreams-420512.uc.r.appspot.com';
     }
 
     // GET request
