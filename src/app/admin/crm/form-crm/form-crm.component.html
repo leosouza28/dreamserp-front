@@ -1,0 +1,136 @@
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="fw-bold mb-0">
+                    {{ form.get('_id')?.value ? 'Editar' : 'Adicionar' }} CRM
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <p class="text-muted px-3 pt-3">Os campos com * são obrigatórios</p>
+                <form [formGroup]="form" (ngSubmit)="onSubmit()" class="px-3 pb-3">
+                    <div class="row g-3">
+
+                        <!-- Tipo de Documento -->
+                        <div class="col-12 col-lg-3">
+                            <label for="doc_type" class="form-label">Tipo de Documento</label>
+                            <select class="form-select" id="doc_type" formControlName="doc_type">
+                                <option *ngFor="let doc of docTypes" [value]="doc.value">
+                                    {{ doc.label }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Documento -->
+                        <div class="col-12 col-lg-4">
+                            <label for="documento" class="form-label">
+                                {{ form.get('doc_type')?.value === 'cpf' ? 'CPF' : 'CNPJ' }}
+                            </label>
+                            <input type="text" class="form-control" id="documento"
+                                formControlName="documento"
+                                [mask]="form.get('doc_type')?.value === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'"
+                                [placeholder]="form.get('doc_type')?.value === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'">
+                        </div>
+
+                        <!-- Nome * -->
+                        <div class="col-12 col-lg-5">
+                            <label for="nome" class="form-label">Nome *</label>
+                            <input type="text" class="form-control" id="nome"
+                                formControlName="nome" placeholder="Nome completo">
+                            <div class="text-danger small mt-1"
+                                *ngIf="form.get('nome')?.invalid && form.get('nome')?.touched">
+                                O nome é obrigatório
+                            </div>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="fw-bold mt-2 mb-0">Tags</h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                    (click)="adicionarTag()">
+                                    <i class="bi bi-plus-circle"></i> Adicionar Tag
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-12" *ngIf="tags.length > 0">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div *ngFor="let tag of tags.controls; let i = index"
+                                        [formGroup]="$any(tag)"
+                                        class="row g-2 mb-3 align-items-end">
+                                        <div class="col-12 col-lg-5">
+                                            <label [for]="'tag_key_' + i" class="form-label">
+                                                Chave *
+                                            </label>
+                                            <input type="text" class="form-control"
+                                                [id]="'tag_key_' + i" formControlName="key"
+                                                placeholder="Ex: categoria, canal, prioridade">
+                                        </div>
+                                        <div class="col-12 col-lg-5">
+                                            <label [for]="'tag_value_' + i" class="form-label">
+                                                Valor *
+                                            </label>
+                                            <input type="text" class="form-control"
+                                                [id]="'tag_value_' + i" formControlName="value"
+                                                placeholder="Ex: lead, email, alta">
+                                        </div>
+                                        <div class="col-12 col-lg-2">
+                                            <button type="button" class="btn btn-danger w-100"
+                                                (click)="removerTag(i)">
+                                                <i class="bi bi-trash"></i> Remover
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12" *ngIf="tags.length === 0">
+                            <div class="alert alert-info">
+                                Nenhuma tag cadastrada. Clique em "Adicionar Tag" para incluir.
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-success"
+                                [disabled]="form.invalid || loading">
+                                <text-spinner [loading]="loading">Salvar</text-spinner>
+                            </button>
+                            <button type="button" class="btn btn-danger ms-2"
+                                (click)="back()" [disabled]="loading">
+                                Cancelar
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+
+                <!-- Metadados -->
+                <div class="card-footer" *ngIf="!!crm_data?._id">
+                    <div class="row">
+                        <div class="col-12 col-lg-4">
+                            <p class="text-muted fw-bold mb-0">Criado em</p>
+                            <p class="text-muted mb-0">
+                                {{ crm_data?.created_at | dateSimple }}
+                            </p>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <p class="text-muted fw-bold mb-0">Atualizado em</p>
+                            <p class="text-muted mb-0">
+                                {{ crm_data?.updated_at | dateSimple }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

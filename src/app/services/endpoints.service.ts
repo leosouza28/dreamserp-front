@@ -113,6 +113,34 @@ export class EndpointsService extends ApiService {
     postPessoa(data: any) {
         return this.post('/v1/admin/pessoas', data);
     }
+    // CRM
+    getCrms({ perpage, page, q, tags, ...params }: any) {
+        let urlParams = new URLSearchParams();
+        if (perpage && page) {
+            urlParams.append('perpage', perpage);
+            urlParams.append('page', page);
+        }
+        if (q) urlParams.append('q', q);
+        if (tags) urlParams.append('tags', tags);
+        for (const key in params) {
+            if (params[key]) urlParams.append(key, params[key]);
+        }
+        return this.get('/v1/admin/crm' + (urlParams.toString() ? `?${urlParams.toString()}` : ''));
+    }
+    getCrmTagKeys() {
+        return this.get('/v1/admin/crm/tags');
+    }
+    getCrmById(id: string) {
+        return this.get('/v1/admin/crm/' + id);
+    }
+    getCrmByDocumento(documento: string) {
+        const urlParams = new URLSearchParams();
+        urlParams.append('q', documento);
+        return this.get('/v1/admin/crm?' + urlParams.toString());
+    }
+    postCrm(data: any) {
+        return this.post('/v1/admin/crm', data);
+    }
 
     getParcelasComissoes(params: any = {}) {
         let urlParams = new URLSearchParams();

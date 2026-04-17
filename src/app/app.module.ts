@@ -54,6 +54,8 @@ import { IdentificadorPipe } from './pipes/identificador.pipe';
 import { ComissoesAgenciaDetalhesComponent } from './admin/comissoes/comissoes-agencia-detalhes/comissoes-agencia-detalhes.component';
 import { BorderoListarComponent } from './admin/comissoes/bordero-listar/bordero-listar.component';
 import { BorderoFormComponent } from './admin/comissoes/bordero-form/bordero-form.component';
+import { ListarCrmComponent } from './admin/crm/listar-crm/listar-crm.component';
+import { FormCrmComponent } from './admin/crm/form-crm/form-crm.component';
 
 registerLocaleData(localePt, 'pt-BR');
 
@@ -101,6 +103,8 @@ LOAD_WASM('assets/wasm/ngx-scanner-qrcode.wasm').subscribe();
     ComissoesAgenciaDetalhesComponent,
     BorderoListarComponent,
     BorderoFormComponent,
+    ListarCrmComponent,
+    FormCrmComponent,
   ],
   imports: [
     BrowserModule,

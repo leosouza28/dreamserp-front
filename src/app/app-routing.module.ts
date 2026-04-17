@@ -20,6 +20,8 @@ import { ComissoesAgenciaDetalhesComponent } from "./admin/comissoes/comissoes-a
 import { BorderoListarComponent } from "./admin/comissoes/bordero-listar/bordero-listar.component";
 import { BorderoFormComponent } from "./admin/comissoes/bordero-form/bordero-form.component";
 
+import { ListarCrmComponent } from './admin/crm/listar-crm/listar-crm.component';
+import { FormCrmComponent } from './admin/crm/form-crm/form-crm.component';
 
 const routes: Routes = [
   {
@@ -115,6 +117,20 @@ const routes: Routes = [
             path: "bordero/form/:id",
             component: BorderoFormComponent
           },
+        ]
+      },
+      {
+        path: 'crm',
+        canActivate: [AuthGuard],
+        children: [
+          {
+            path: 'listar',
+            component: ListarCrmComponent
+          },
+          {
+            path: 'form',
+            component: FormCrmComponent
+          }
         ]
       },
       {
