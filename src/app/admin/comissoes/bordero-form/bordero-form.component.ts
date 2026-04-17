@@ -79,8 +79,7 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
       }),
       valedasminas_porcentagem_paga_ate: [''],
       valedasminas_porcentagem_paga_mais: [''],
-      nome_cliente: [''],
-      identificador_receita: ['']
+      busca_geral: ['']
     });
   }
 
@@ -113,8 +112,7 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
     this.localFiltersForm.get('scores.e')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
     this.localFiltersForm.get('valedasminas_porcentagem_paga_ate')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
     this.localFiltersForm.get('valedasminas_porcentagem_paga_mais')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
-    this.localFiltersForm.get('nome_cliente')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
-    this.localFiltersForm.get('identificador_receita')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
+    this.localFiltersForm.get('busca_geral')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
 
     // Listener com debounce para atualizar parcelas disponíveis
     this.atualizarParcelas$
@@ -265,7 +263,7 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
     }
 
     const formValue = this.localFiltersForm.getRawValue();
-    const { status, scores, valedasminas_porcentagem_paga_ate, valedasminas_porcentagem_paga_mais, nome_cliente, identificador_receita } = formValue;
+    const { status, scores, valedasminas_porcentagem_paga_ate, valedasminas_porcentagem_paga_mais, busca_geral } = formValue;
 
     // Map de scores selecionados
     const scoresMap: { [key: string]: string } = {
@@ -313,20 +311,13 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Filtro 5: nome do cliente
-      if (nome_cliente) {
-        const nomeClienteNormalizado = (nome_cliente || '').toLowerCase();
-        const itemNome = (item.cliente?.nome || '').toLowerCase();
-        if (!itemNome.includes(nomeClienteNormalizado)) {
-          return false;
-        }
-      }
-
-      // Filtro 6: identificador da receita (numero do titulo)
-      if (identificador_receita) {
-        const identificadorNormalizado = (identificador_receita || '').toLowerCase();
-        const itemIdentificador = (item.numero_titulo || '').toLowerCase();
-        if (!itemIdentificador.includes(identificadorNormalizado)) {
+      // Filtro 5: busca geral (nome do cliente ou número do título)
+      if (busca_geral) {
+        const buscaNormalizada = (busca_geral || '').toLowerCase();
+        const nomeCliente = (item.cliente?.nome || '').toLowerCase();
+        const numeroTitulo = (item.identificador || '').toLowerCase();
+        const match = nomeCliente.includes(buscaNormalizada) || numeroTitulo.includes(buscaNormalizada);
+        if (!match) {
           return false;
         }
       }
@@ -447,5 +438,67 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
       }
     }
     return Array.from(scores).sort();
+  }
+
+  exportarCSV(): void {
+    if (this.parcelasDisponiveisFilteradas.length === 0) {
+      this.alert.showWarning('Nenhuma parcela disponível para exportar');
+      return;
+    }
+
+    const headers = [
+      'Cliente',
+      'Documento',
+      'Nº Título',
+      'Tipo',
+      'Valor',
+      'Status',
+      'Data Emissão',
+      'Data Vencimento',
+      'Data Recebimento',
+      'Score',
+      '% Paga'
+    ];
+
+    const dados = this.parcelasDisponiveisFilteradas.map(item => [
+      item.cliente?.nome || '',
+      item.cliente?.documento || '',
+      item.numero_titulo || '',
+      item.parcelas?.tipo || '',
+      item.parcelas?.valor_parcela || '',
+      item.parcelas?.status || '',
+      item.data ? new Date(item.data).toLocaleDateString('pt-BR') : '',
+      item.parcelas?.data_vencimento ? new Date(item.parcelas.data_vencimento).toLocaleDateString('pt-BR') : '',
+      item.parcelas?.data_recebimento ? new Date(item.parcelas.data_recebimento).toLocaleDateString('pt-BR') : '',
+      item.cliente?.score || '',
+      (item.valedasminas_porcentagem_paga || 0).toFixed(2) + '%'
+    ]);
+
+    this.gerarCSV(headers, dados, 'parcelas-comissoes.csv');
+    this.alert.showSuccess(`${this.parcelasDisponiveisFilteradas.length} parcela(s) exportada(s)`);
+  }
+
+  private gerarCSV(headers: string[], dados: any[][], nomeArquivo: string): void {
+    const csv = [
+      headers.map(h => this.escaparCSV(h)).join(','),
+      ...dados.map(linha => linha.map(valor => this.escaparCSV(String(valor))).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', nomeArquivo);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  private escaparCSV(valor: string): string {
+    if (valor.includes(',') || valor.includes('"') || valor.includes('\n')) {
+      return `"${valor.replace(/"/g, '""')}"`;
+    }
+    return valor;
   }
 }

@@ -12,6 +12,7 @@ import { EndpointsService } from 'src/app/services/endpoints.service';
 })
 export class ComissoesAgenciaDetalhesComponent {
   private readonly VALE_DAS_MINAS_PARK_URL = 'https://valedasminaspark.lsdevelopers.dev/admin/vendas/listar';
+  private readonly VALE_DAS_MINAS_PARK_TITULO_URL = 'https://valedasminaspark.lsdevelopers.dev/admin/titulos/operar';
   readonly valorParcelaCurrencyOptions = {
     align: 'left',
     allowNegative: true,
@@ -163,6 +164,11 @@ export class ComissoesAgenciaDetalhesComponent {
       backdrop: 'static',
     });
   }
+  abrirTituloValeDasMinasPark() {
+    if (!this.isValeDasMinasPark) return;
+    let id = this.dados.identificador.split("VALE_DAS_MINAS_PARK_")[1];
+    window.open(`${this.VALE_DAS_MINAS_PARK_TITULO_URL}?_id=${id}&tab=3`, '_blank', 'noopener,noreferrer');
+  }
 
   async confirmarCancelamento() {
     if (!this.parcelasParaCancelar.length || this.loadingCancel) return;
@@ -192,7 +198,7 @@ export class ComissoesAgenciaDetalhesComponent {
     this.parcelaEditando = parcela;
     const toDateInput = (v: any) => v ? new Date(v).toISOString().substring(0, 10) : null;
     let fp = '';
-    if(parcela?.forma_pagamento != 'A DEFINIR') {
+    if (parcela?.forma_pagamento != 'A DEFINIR') {
       fp = parcela?.forma_pagamento || '';
     }
     const valorBruto = parcela.valor_parcela ?? null;

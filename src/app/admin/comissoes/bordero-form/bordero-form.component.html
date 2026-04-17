@@ -111,6 +111,7 @@
                             <th style="width: 50px;">Ação</th>
                             <th>Devedor</th>
                             <th></th>
+                            <th></th>
                             <th>Tipo</th>
                             <th class="text-center">Parcela</th>
                             <th class="text-center">Status</th>
@@ -129,7 +130,9 @@
                                 </button>
                             </td>
                             <td class="text-uppercase">
-                                {{item.cliente?.nome}}
+                                <a [routerLink]="['/admin/comissoes/agencia/detalhes', item._id]" target="_blank" >
+                                    {{item.cliente?.nome}} 
+                                </a>
                                 <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.valedasminas_cancelado"
                                     ngbTooltip="Qtd de dias entre Venda e Solicitação de cancelamento">
                                     <i class="bi bi-ban me-1"></i>
@@ -302,17 +305,11 @@
                                 formControlName="valedasminas_porcentagem_paga_mais" placeholder="Ex: 50" min="0"
                                 max="100" step="0.01">
                         </div>
-                        <!-- Filtro Nome do Cliente -->
-                        <div class="col-12 col-md-2">
-                            <label class="form-label small fw-semibold text-uppercase">Nome Cliente</label>
-                            <input type="text" class="form-control form-control-sm" formControlName="nome_cliente"
-                                placeholder="Buscar por nome...">
-                        </div>
-                        <!-- Filtro Identificador Receita -->
-                        <div class="col-12 col-md-2">
-                            <label class="form-label small fw-semibold text-uppercase">Nº Título</label>
-                            <input type="text" class="form-control form-control-sm"
-                                formControlName="identificador_receita" placeholder="Buscar por nº...">
+                        <!-- Filtro Busca Geral -->
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-semibold text-uppercase">Busca</label>
+                            <input type="text" class="form-control form-control-sm" formControlName="busca_geral"
+                                placeholder="Cliente ou Nº Título...">
                         </div>
                         <!-- Botão Limpar -->
                         <div class="col-12 col-md-2 d-flex align-items-end">
@@ -329,6 +326,12 @@
                     <h6 class="fw-bold mb-0">Parcelas Disponíveis <span class="badge bg-info">{{
                             parcelasDisponiveisFilteradas.length }}</span></h6>
                     <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-info" (click)="exportarCSV()"
+                            *ngIf="parcelasDisponiveisFilteradas.length > 0"
+                            title="Exportar lista filtrada para CSV">
+                            <i class="bi bi-download me-1"></i>
+                            Exportar CSV
+                        </button>
                         <button type="button" class="btn btn-sm btn-outline-primary" (click)="marcarTodas()"
                             *ngIf="(!temParcelasSelecionadas() || parcelasSelecionadas.size < parcelasDisponiveisFilteradas.length) && parcelasDisponiveisFilteradas.length > 0">
                             <i class="bi bi-check-all me-1"></i>
@@ -352,6 +355,7 @@
                                 <th style="width: 50px;"></th>
                                 <th>Devedor</th>
                                 <th></th>
+                                <th></th>
                                 <th>Tipo</th>
                                 <th class="text-center">Parcela</th>
                                 <th class="text-center">Status</th>
@@ -372,8 +376,9 @@
                                     </div>
                                 </td>
                                 <td class="text-uppercase">
-                                    {{item.cliente?.nome}}
-                                    <span>{{item.identificador}}</span>
+                                    <a [routerLink]="['/admin/comissoes/agencia/detalhes', item._id]" target="_blank" >
+                                        {{item.cliente?.nome}} 
+                                    </a>
                                     <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.valedasminas_cancelado"
                                         ngbTooltip="Qtd de dias entre Venda e Solicitação de cancelamento">
                                         <i class="bi bi-ban me-1"></i>
@@ -395,6 +400,8 @@
                                         [ngbTooltip]="item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$ = Parque recebeu a parcela neste mês' : 'X = Parque não recebeu a parcela neste mês'">
                                         {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$' : 'X'}}
                                     </span>
+                                    <br>
+                                    <small class="fw-bold">{{item.identificador}}</small>
                                 </td>
                                 <td class="text-end">
                                     <span

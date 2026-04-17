@@ -177,17 +177,11 @@
                                         <input type="number" class="form-control form-control-sm" formControlName="valedasminas_porcentagem_paga_mais"
                                             placeholder="Ex: 50" min="0" max="100" step="0.01">
                                     </div>
-                                    <!-- Filtro Nome do Cliente -->
-                                    <div class="col-12 col-md-2">
-                                        <label class="form-label small fw-semibold text-uppercase">Nome Cliente</label>
-                                        <input type="text" class="form-control form-control-sm" formControlName="nome_cliente"
-                                            placeholder="Buscar por nome...">
-                                    </div>
-                                    <!-- Filtro Identificador Receita -->
-                                    <div class="col-12 col-md-2">
-                                        <label class="form-label small fw-semibold text-uppercase">Nº Título</label>
-                                        <input type="text" class="form-control form-control-sm" formControlName="identificador_receita"
-                                            placeholder="Buscar por nº...">
+                                    <!-- Filtro Busca Geral -->
+                                    <div class="col-12 col-md-3">
+                                        <label class="form-label small fw-semibold text-uppercase">Busca</label>
+                                        <input type="text" class="form-control form-control-sm" formControlName="busca_geral"
+                                            placeholder="Cliente ou Nº Título...">
                                     </div>
                                     <!-- Botão Limpar -->
                                     <div class="col-12 col-md-2 d-flex align-items-end">
@@ -202,6 +196,13 @@
                         </div>
 
                         <div class="col-12">
+                            <div class="d-flex justify-content-end gap-2 mb-3" *ngIf="dataFilterada.lista && dataFilterada.lista.length > 0">
+                                <button type="button" class="btn btn-sm btn-info" (click)="exportarCSV()"
+                                    title="Exportar lista filtrada para CSV">
+                                    <i class="bi bi-download me-1"></i>
+                                    Exportar CSV
+                                </button>
+                            </div>
                             <div class="table-responsive">
                                 <table class="table table-sm table-striped">
                                     <thead>
