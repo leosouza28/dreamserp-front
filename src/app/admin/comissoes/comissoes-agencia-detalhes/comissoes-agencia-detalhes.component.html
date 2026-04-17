@@ -1,0 +1,440 @@
+<div class="container-fluid" *ngIf="dados">
+    <div class="row g-3">
+
+        <!-- Cabeçalho -->
+        <div class="col-12">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <h1 class="fw-bold text-primary mb-0">Detalhes da Comissão</h1>
+                <render-badge [badgeText]="dados.status"></render-badge>
+            </div>
+            <small class="text-muted d-flex flex-wrap align-items-center gap-2">
+                <span>{{ dados.identificador }}</span>
+                <button *ngIf="isValeDasMinasPark" type="button" class="btn btn-link btn-sm p-0 text-decoration-none"
+                    (click)="abrirVendaValeDasMinasPark()">
+                    Abrir venda no Vale das Minas Park
+                    <i class="bi bi-box-arrow-up-right ms-1"></i>
+                </button>
+            </small>
+        </div>
+
+        <!-- Agência / Produto -->
+        <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold text-uppercase text-secondary mb-3">Contrante &amp; Produto</h6>
+                    <dl class="row mb-0 small">
+                        <dt class="col-5 text-muted">Contratante</dt>
+                        <dd class="col-7">{{ dados.pessoa.nome }}</dd>
+
+                        <dt class="col-5 text-muted">CNPJ</dt>
+                        <dd class="col-7">{{ dados.pessoa.documento |cpfCnpj}}</dd>
+
+                        <dt class="col-5 text-muted">Produto</dt>
+                        <dd class="col-7">{{ dados.produto.nome }}</dd>
+
+                        <dt class="col-5 text-muted">Código</dt>
+                        <dd class="col-7">{{ dados.produto.codigo }}</dd>
+
+                        <dt class="col-5 text-muted">Data de Venda</dt>
+                        <dd class="col-7">{{ dados.data | dateSimple }}</dd>
+
+                        <dt class="col-5 text-muted">Origem</dt>
+                        <dd class="col-7">{{ dados.origem }}</dd>
+
+                        <dt class="col-5 text-muted">% Recebida</dt>
+                        <dd class="col-7">{{ dados.valedasminas_porcentagem_paga }}%</dd>
+
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financeiro -->
+        <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold text-uppercase text-secondary mb-3">Financeiro</h6>
+                    <dl class="row mb-0 small">
+                        <dt class="col-6 text-muted">Valor Total</dt>
+                        <dd class="col-6 fw-semibold">{{ dados.valor_total | moneyBrl }}</dd>
+
+                        <dt class="col-6 text-muted">Valor Recebido</dt>
+                        <dd class="col-6 text-success fw-semibold">{{ dados.valor_recebido | moneyBrl }}</dd>
+
+                        <dt class="col-6 text-muted">Pendência</dt>
+                        <dd class="col-6 text-danger fw-semibold">{{ dados.pendencia?.valor | moneyBrl }}</dd>
+
+                        <dt class="col-6 text-muted">Tipo Pendência</dt>
+                        <dd class="col-6">{{ dados.pendencia?.tipo || '—' }}</dd>
+
+                        <ng-container *ngIf="dados.valedasminas_cancelado">
+                            <hr class="my-2">
+
+                            <h6 class="fw-bold text-uppercase text-danger mb-2">Cancelamento</h6>
+                            <ng-container *ngIf="dados?.valedasminas_data_solicitacao_cancelamento">
+                                <dt class="col-6 text-muted">Data de Solicitação</dt>
+                                <dd class="col-6">{{ dados.valedasminas_data_solicitacao_cancelamento | dateSimple }}
+                                    ({{dados.valedasminas_data_solicitacao_cancelamento | dateFromNow}})
+                                </dd>
+                            </ng-container>
+
+                            <dt class="col-6 text-muted">Cancelado</dt>
+                            <dd class="col-6">{{ dados.valedasminas_cancelado ? 'Sim' : 'Não' }}</dd>
+
+                            <dt class="col-6 text-muted">Dias desde cancelamento</dt>
+                            <dd class="col-6">{{ dados.valedasminas_diff_dias_cancelamento }} dias</dd>
+
+
+                            <ng-container *ngIf="dados?.valedasminas_cancelamento_classificacao">
+                                <dt class="col-6 text-muted">Classificação do Cancelamento</dt>
+                                <dd class="col-6">{{ dados.valedasminas_cancelamento_classificacao }}</dd>
+                            </ng-container>
+
+                            <ng-container *ngIf="dados?.valedasminas_cancelamento_motivo">
+                                <dt class="col-6 text-muted">Motivo do Cancelamento</dt>
+                                <dd class="col-6">{{ dados.valedasminas_cancelamento_motivo }}</dd>
+                            </ng-container>
+
+
+                        </ng-container>
+                    </dl>
+
+                    <hr class="my-2">
+
+                    <h6 class="fw-bold text-uppercase text-secondary mb-2">Detalhes do Produto</h6>
+                    <dl class="row mb-0 small">
+                        <ng-container *ngFor="let d of dados.produto_detalhes">
+                            <dt class="col-6 text-muted text-capitalize">{{ d.key | titlecase }}</dt>
+                            <dd class="col-6">{{ d.value }}</dd>
+                        </ng-container>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cliente -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold text-uppercase text-secondary mb-3">Cliente</h6>
+                    <div class="row small">
+                        <div class="col-12 col-md-4">
+                            <dl class="row mb-0">
+                                <dt class="col-5 text-muted">Nome</dt>
+                                <dd class="col-7 text-uppercase">{{ dados.cliente.nome }}</dd>
+
+                                <dt class="col-5 text-muted">CPF</dt>
+                                <dd class="col-7">{{ dados.cliente.cpf_cnpj | cpfCnpj }}</dd>
+
+                                <dt class="col-5 text-muted">RG</dt>
+                                <dd class="col-7">{{ dados.cliente.rg || '—' }}</dd>
+
+                                <dt class="col-5 text-muted">Score</dt>
+                                <dd class="col-7"><strong>{{ dados.cliente.score }}</strong></dd>
+                            </dl>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <dl class="row mb-0">
+                                <dt class="col-5 text-muted">E-mail</dt>
+                                <dd class="col-7">{{ dados.cliente.email || '—' }}</dd>
+
+                                <dt class="col-5 text-muted">Nascimento</dt>
+                                <dd class="col-7">{{ dados.cliente.data_nascimento | dateSimple }}</dd>
+
+                                <dt class="col-5 text-muted">Gênero</dt>
+                                <dd class="col-7">{{ dados.cliente.genero || '—' }}</dd>
+
+                                <dt class="col-5 text-muted">Estado Civil</dt>
+                                <dd class="col-7">{{ dados.cliente.estado_civil || '—' }}</dd>
+                            </dl>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <dl class="row mb-0" *ngIf="dados.cliente.endereco_primario as e">
+                                <dt class="col-5 text-muted">CEP</dt>
+                                <dd class="col-7">{{ e.cep }}</dd>
+
+                                <dt class="col-5 text-muted">Logradouro</dt>
+                                <dd class="col-7">{{ e.logradouro }}, {{ e.numero }}</dd>
+
+                                <dt class="col-5 text-muted">Bairro</dt>
+                                <dd class="col-7">{{ e.bairro }}</dd>
+
+                                <dt class="col-5 text-muted">Cidade/UF</dt>
+                                <dd class="col-7">{{ e.cidade }} / {{ e.estado }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Accordion de Observações -->
+        <div class="col-12">
+            <div ngbAccordion class="shadow-sm rounded overflow-hidden">
+                <div ngbAccordionItem [collapsed]="true">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                            Observações ({{ dados.observacoes.length }})
+                        </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+                            <ng-template>
+                                <div class="small">
+                                    <ul class="list-unstyled mb-0">
+                                        <li *ngFor="let o of dados.observacoes" class="mb-2">
+                                            <div class="d-flex gap-2 border-bottom pb-2">
+                                                <div>
+                                                    <p class="mb-1" style="white-space: break-spaces;">{{ o.mensagem }}
+                                                    </p>
+                                                    <small class="text-muted">{{ o.data_hora | date: 'dd/MM/yyyy HH:mm'
+                                                        }} ({{o.data_hora | dateFromNow}})</small>
+                                                </div>
+                                                <div>
+                                                    <span class="badge bg-info text-dark" *ngIf="o.usuario"
+                                                        [title]="o.usuario.nome || o.usuario.username || 'Usuário'">
+                                                        <i class="bi bi-person-circle me-1"></i>{{ o.usuario.nome ||
+                                                        o.usuario.username || 'Usuário' }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parcelas -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="fw-bold text-uppercase text-secondary mb-0">Parcelas ({{ dados.parcelas.length }})
+                        </h6>
+                        <button class="btn btn-sm btn-outline-danger" *ngIf="selected.size > 0"
+                            [disabled]="loadingCancel" (click)="abrirModalCancelarSelecionadas()">
+                            <span *ngIf="loadingCancel" class="spinner-border spinner-border-sm me-1"></span>
+                            Cancelar selecionadas ({{ selected.size }})
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead>
+                                <tr class="text-uppercase small">
+                                    <th class="text-center" style="width: 36px;">
+                                        <input type="checkbox" class="form-check-input" [checked]="allSelected"
+                                            (change)="toggleSelectAll()">
+                                    </th>
+                                    <th>Tipo</th>
+                                    <th class="text-center">Parcela</th>
+                                    <th>Forma Pgto</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-end">Vencimento</th>
+                                    <th class="text-end">Recebimento</th>
+                                    <th class="text-end">Valor</th>
+                                    <th class="text-center" style="width: 90px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="small">
+                                <tr *ngFor="let p of dados.parcelas" [class.table-secondary]="selected.has(p._id)">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input" [checked]="selected.has(p._id)"
+                                            (change)="toggleSelect(p._id)">
+                                    </td>
+                                    <td>
+                                        {{ p.tipo }}
+                                        <span *ngIf="p.tipo == 'DEVOLUCAO'" class="badge bg-warning ms-1">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                        </span>
+                                        <span *ngIf="p.tipo == 'ENTRADA RESTANTE'" class="badge bg-secondary ms-1">
+                                            <i class="bi bi-arrow-up"></i>
+                                        </span>
+                                        <span *ngIf="p.alterado_por" class="badge bg-info text-dark ms-1"
+                                            [title]="'Alterado por ' + (p.alterado_por?.usuario?.nome || p.alterado_por?.usuario?.username || 'Usuário') + ' em ' + (p.alterado_por?.data_hora | date: 'dd/MM/yyyy HH:mm')">
+                                            <i class="bi bi-pencil-square me-1"></i>Alterada
+                                        </span>
+                                        <span
+                                            class="badge {{p?.valedasminas_recebeu_mes_referencia ? 'bg-success' : 'bg-danger'}} me-1 cursor-help"
+                                            *ngIf="p?.tipo == 'SALDO'"
+                                            [ngbTooltip]="p?.valedasminas_recebeu_mes_referencia ? '$ = Parque recebeu a parcela neste mês' : 'X = Parque não recebeu a parcela neste mês'">
+                                            {{p?.valedasminas_recebeu_mes_referencia ? '$' : 'X'}}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{ p.label_parcelas }}</td>
+                                    <td>{{ p.forma_pagamento }}</td>
+                                    <td class="text-center">
+                                        <render-badge [badgeText]="p.status"></render-badge>
+                                    </td>
+                                    <td class="text-end">{{ p.data_vencimento | dateSimple }}</td>
+                                    <td class="text-end">{{ p.data_recebimento | dateSimple }}</td>
+                                    <td class="text-end fw-semibold">{{ p.valor_parcela | moneyBrl }}</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-xs btn-outline-primary py-0 px-1 me-1" title="Editar"
+                                            (click)="abrirModalEditar(p)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-xs btn-outline-danger py-0 px-1" title="Cancelar"
+                                            [disabled]="loadingCancel || p.status === 'CANCELADO'"
+                                            (click)="abrirModalCancelarParcela(p)">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="7" class="text-end">Total</td>
+                                    <td class="text-end">{{ totalParcelas | moneyBrl }}</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div *ngIf="!dados && !loading" class="text-center py-5 text-muted">
+    Nenhum registro encontrado.
+</div>
+
+<div *ngIf="loading" class="d-flex justify-content-center py-5">
+    <span class="spinner-border text-primary"></span>
+</div>
+
+<!-- Modal Cancelar Parcela(s) -->
+<ng-template #modalCancelarParcela let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">
+            {{ cancelMode === 'single' ? 'Confirmar cancelamento da parcela' : 'Confirmar cancelamento das parcelas' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()" [disabled]="loadingCancel"></button>
+    </div>
+    <div class="modal-body" [formGroup]="cancelForm">
+        <p class="small text-muted mb-2">
+            Revise abaixo as cobranças que serão canceladas.
+        </p>
+
+        <div class="table-responsive mb-3">
+            <table class="table table-sm table-bordered align-middle mb-0">
+                <thead>
+                    <tr class="text-uppercase small">
+                        <th>Tipo</th>
+                        <th class="text-center">Parcela</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Vencimento</th>
+                        <th class="text-end">Valor</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    <tr *ngFor="let p of parcelasParaCancelar">
+                        <td>{{ p.tipo }}</td>
+                        <td class="text-center">{{ p.label_parcelas }}</td>
+                        <td class="text-center"><render-badge [badgeText]="p.status"></render-badge></td>
+                        <td class="text-end">{{ p.data_vencimento | dateSimple }}</td>
+                        <td class="text-end fw-semibold">{{ p.valor_parcela | moneyBrl }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="4" class="text-end">Total</td>
+                        <td class="text-end">{{ totalCancelamentoSelecionado | moneyBrl }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div>
+            <label class="form-label small fw-semibold text-uppercase">Observação do cancelamento</label>
+            <textarea class="form-control" formControlName="observacao" rows="4"
+                placeholder="Descreva o motivo do cancelamento..."></textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.dismiss()"
+            [disabled]="loadingCancel">Fechar</button>
+        <button type="button" class="btn btn-danger btn-sm" [disabled]="loadingCancel"
+            (click)="confirmarCancelamento()">
+            <span *ngIf="loadingCancel" class="spinner-border spinner-border-sm me-1"></span>
+            Confirmar cancelamento
+        </button>
+    </div>
+</ng-template>
+
+<!-- Modal Editar Parcela -->
+<ng-template #modalEditarParcela let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">Editar Parcela</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body" [formGroup]="editForm">
+
+        <div class="alert alert-warning d-flex gap-2 align-items-start small py-2">
+            <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+            <span>Após editar esta parcela, ela <strong>não será mais sincronizada automaticamente</strong> com a fonte
+                de dados.</span>
+        </div>
+
+        <div class="alert alert-info d-flex gap-2 align-items-start small py-2"
+            *ngIf="parcelaEditando?.alterado_por as alteracao">
+            <i class="bi bi-clock-history mt-1"></i>
+            <span>
+                Última alteração em <strong>{{ alteracao.data_hora | date: 'dd/MM/yyyy HH:mm' }}</strong>
+                ({{ alteracao.data_hora | dateFromNow }})
+                por <strong>{{ alteracao.usuario?.nome || alteracao.usuario?.username || 'Usuário' }}</strong>.
+            </span>
+        </div>
+
+        <div class="row g-2">
+            <div class="col-12 col-md-6">
+                <label class="form-label small fw-semibold text-uppercase">Tipo</label>
+                <select class="form-select form-select-sm" formControlName="tipo">
+                    <option *ngFor="let t of TIPOS" [value]="t">{{ t }}</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label small fw-semibold text-uppercase">Forma de Pagamento</label>
+                <select class="form-select form-select-sm" formControlName="forma_pagamento">
+                    <option value="">Selecione</option>
+                    <option *ngFor="let f of FORMAS_PAGAMENTO" [value]="f">{{ f }}</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label small fw-semibold text-uppercase">Status</label>
+                <select class="form-select form-select-sm" formControlName="status">
+                    <option *ngFor="let s of STATUS_OPCOES" [value]="s">{{ s }}</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label small fw-semibold text-uppercase">Valor (R$)</label>
+                <input currencyMask [options]="valorParcelaCurrencyOptions" class="form-control form-control-sm"
+                    formControlName="valor_parcela">
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label small fw-semibold text-uppercase">Vencimento</label>
+                <input type="date" class="form-control form-control-sm" formControlName="data_vencimento">
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label small fw-semibold text-uppercase">Data de Liquidação</label>
+                <input type="date" class="form-control form-control-sm" formControlName="data_recebimento"
+                    [disabled]="!isEditStatusLiquidado">
+                <small class="text-muted" *ngIf="!isEditStatusLiquidado">Disponível apenas quando o status for
+                    LIQUIDADO.</small>
+            </div>
+        </div>
+
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.dismiss()">Cancelar</button>
+        <button type="button" class="btn btn-primary btn-sm" [disabled]="loadingEdit" (click)="salvarEdicao()">
+            <span *ngIf="loadingEdit" class="spinner-border spinner-border-sm me-1"></span>
+            Salvar
+        </button>
+    </div>
+</ng-template>

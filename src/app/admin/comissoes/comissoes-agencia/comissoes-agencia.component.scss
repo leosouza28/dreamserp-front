@@ -1,0 +1,25 @@
+.resumo-tipo-card {
+	border: 1px solid #e7edf3;
+	border-radius: 0.75rem;
+	box-shadow: 0 10px 24px rgba(16, 24, 40, 0.06);
+}
+
+.resumo-tipo-linha {
+	padding: 0.65rem 0;
+	border-bottom: 1px solid #eef2f6;
+}
+
+.resumo-tipo-linha:last-child {
+	border-bottom: 0;
+	padding-bottom: 0;
+}
+
+// Tooltip styling for badges
+.cursor-help {
+	cursor: help;
+	transition: opacity 0.2s ease;
+
+	&:hover {
+		opacity: 0.9;
+	}
+}

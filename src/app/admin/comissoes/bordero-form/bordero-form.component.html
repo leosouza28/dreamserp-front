@@ -1,0 +1,441 @@
+<div class="container-fluid">
+
+    <div class="card shadow-sm rounded-t-1 mb-3">
+        <div class="card-header bg-primary text-white rounded-t-1">
+            <p class="mb-0 fw-bold">Dados do Borderô</p>
+        </div>
+        <div class="card-body" [formGroup]="form">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="data_inicial" class="form-label">Data Inicial</label>
+                    <input type="date" id="data_inicial" class="form-control" formControlName="data_inicial">
+                    <div *ngIf="form.get('data_inicial')?.invalid && form.get('data_inicial')?.touched"
+                        class="text-danger">
+                        Campo obrigatório.
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="data_final" class="form-label">Data Final</label>
+                    <input type="date" id="data_final" class="form-control" formControlName="data_final">
+                    <!-- Obrigatorio -->
+                    <div *ngIf="form.get('data_final')?.invalid && form.get('data_final')?.touched" class="text-danger">
+                        Campo obrigatório.
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="identificador" class="form-label">Identificador</label>
+                    <input type="text" id="identificador" class="form-control" formControlName="identificador"
+                        placeholder="Ex: Março">
+                </div>
+                <div class="col-md-3 mb-3" [formGroupName]="'pessoa'">
+                    <label for="pessoa" class="form-label">Cliente</label>
+                    <select id="pessoa" class="form-select" formControlName="_id">
+                        <option value="">Selecione</option>
+                        <option *ngFor="let pessoa of pessoas" [value]="pessoa._id">{{pessoa.nome}}</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="forma_pagamento" class="form-label">Forma de Pagamento</label>
+                    <select id="forma_pagamento" class="form-select" formControlName="forma_pagamento">
+                        <option value="">Selecione</option>
+                        <option *ngFor="let forma of formas_pagamento" [value]="forma">{{forma}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="d-flex flex-row">
+                <button class="btn btn-primary" type="submit" (click)="submit()" [disabled]="loading">
+                    <text-spinner [loading]="loading">
+                        Salvar
+                    </text-spinner>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card de Parcelas do Borderô com Totalizadores -->
+    <div class="card shadow-sm rounded-t-1 mb-3" *ngIf="parcelasAdicionadas.length > 0">
+        <div class="card-header bg-primary text-white rounded-t-1">
+            <p class="mb-0 fw-bold">Parcelas do Borderô</p>
+        </div>
+        <div class="card-body">
+            <!-- Totalizadores -->
+            <div class="row g-2 mb-4">
+                <div class="col-12 col-md-4">
+                    <div class="card border-0 shadow-sm h-100 bg-white">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="text-muted text-uppercase fw-semibold d-block">Crédito</small>
+                                    <div class="fw-bold fs-6 text-success">{{ totalCredito | moneyBrl }}</div>
+                                </div>
+                                <i class="bi bi-arrow-up-circle text-success" style="font-size: 2rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card border-0 shadow-sm h-100 bg-white">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="text-muted text-uppercase fw-semibold d-block">Débito</small>
+                                    <div class="fw-bold fs-6 text-danger">{{ totalDebito | moneyBrl }}</div>
+                                </div>
+                                <i class="bi bi-arrow-down-circle text-danger" style="font-size: 2rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card border-0 shadow-sm h-100 bg-white">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="text-muted text-uppercase fw-semibold d-block">Subtotal</small>
+                                    <div class="fw-bold fs-6"
+                                        [ngClass]="{'text-success': subtotal > 0, 'text-danger': subtotal < 0}">{{
+                                        subtotal | moneyBrl }}</div>
+                                </div>
+                                <i class="bi bi-calculator" style="font-size: 2rem; opacity: 0.5;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Parcelas Adicionadas ao Borderô -->
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr class="text-uppercase">
+                            <th style="width: 50px;">Ação</th>
+                            <th>Devedor</th>
+                            <th></th>
+                            <th>Tipo</th>
+                            <th class="text-center">Parcela</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end">Emissão</th>
+                            <th class="text-end">Vencimento</th>
+                            <th class="text-end">Valor</th>
+                            <th class="text-end">Liquidação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of parcelasAdicionadas" class="table-success">
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger" (click)="removerParcela(item._id)"
+                                    title="Remover parcela">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                            <td class="text-uppercase">
+                                {{item.cliente?.nome}}
+                                <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.valedasminas_cancelado"
+                                    ngbTooltip="Qtd de dias entre Venda e Solicitação de cancelamento">
+                                    <i class="bi bi-ban me-1"></i>
+                                    {{item?.valedasminas_diff_dias_cancelamento}} dias
+                                </span>
+                                <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.pendencia?.tipo == 'DEBITO'"
+                                    ngbTooltip="Contratante precisa pagar">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    {{item?.pendencia.tipo}}
+                                </span>
+                                <span class="badge bg-secondary me-1 cursor-help"
+                                    *ngIf="item?.pendencia?.tipo == 'CREDITO'" ngbTooltip="Agência precisa pagar">
+                                    <i class="bi bi-arrow-up me-1"></i> {{item?.pendencia.tipo}}
+                                </span>
+                                <span
+                                    class="badge {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? 'bg-success' : 'bg-danger'}} me-1 cursor-help"
+                                    *ngIf="item?.parcelas?.tipo == 'SALDO'"
+                                    [ngbTooltip]="item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$ = Parque recebeu a parcela neste mês' : 'X = Parque não recebeu a parcela neste mês'">
+                                    {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$' : 'X'}}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <span
+                                    class="badge {{item?.valedasminas_porcentagem_mais_30 ? 'bg-success' : 'bg-warning'}} me-1 cursor-help"
+                                    ngbTooltip="Porcentagem recebida pelo parque">
+                                    {{(item?.valedasminas_porcentagem_paga || 0)?.toFixed(2)}}%
+                                </span>
+                            </td>
+                            <td class="text-center">{{item.cliente?.score ? '(' + item.cliente?.score + ')' : ''}}</td>
+                            <td>{{item.parcelas?.tipo}}</td>
+                            <td class="text-center">{{item.parcelas?.label_parcelas}}</td>
+                            <td class="text-center">
+                                <render-badge [badgeText]="item.parcelas?.status"></render-badge>
+                            </td>
+                            <td class="text-end">{{item.data | dateSimple}}</td>
+                            <td class="text-end">{{item.parcelas?.data_vencimento | dateSimple}}</td>
+                            <td class="text-end">{{item.parcelas?.valor_parcela | moneyBrl}}</td>
+                            <td class="text-end">{{item.parcelas?.data_recebimento | dateSimple}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm rounded-t-1 mb-3" *ngIf="form.get('_id')?.value">
+        <div class="card-header bg-primary text-white rounded-t-1">
+            <p class="mb-0 fw-bold">Confecção do Borderô</p>
+        </div>
+        <div class="card-body">
+            <!-- Formulário de Busca -->
+            <form [formGroup]="searchForm" (ngSubmit)="buscarParcelas()" class="mb-4">
+                <div class="row g-2 align-items-end mb-3">
+                    <!-- Tipo de Data -->
+                    <div class="col-12 col-md-2">
+                        <label class="form-label small fw-semibold text-uppercase">Buscar por Data</label>
+                        <select class="form-select form-select-sm" formControlName="tipo_data">
+                            <option value="emissao">Emissão</option>
+                            <option value="vencimento">Vencimento</option>
+                        </select>
+                    </div>
+                    <!-- Data Inicial -->
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small fw-semibold text-uppercase">Data Inicial</label>
+                        <input type="date" class="form-control form-control-sm" formControlName="data_inicial">
+                    </div>
+                    <!-- Data Final -->
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small fw-semibold text-uppercase">Data Final</label>
+                        <input type="date" class="form-control form-control-sm" formControlName="data_final">
+                    </div>
+                    <!-- Botão Buscar -->
+                    <div class="col-12 col-md-2">
+                        <button type="submit" class="btn btn-primary btn-sm w-100" [disabled]="loadingSearch">
+                            <span *ngIf="loadingSearch" class="spinner-border spinner-border-sm me-1"></span>
+                            <span *ngIf="!loadingSearch">Buscar</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tipo de Parcela -->
+                <div class="row">
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-uppercase me-3">Tipo de Parcela</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="tipoEntrada"
+                                formControlName="tipo_entrada">
+                            <label class="form-check-label small" for="tipoEntrada">Entrada</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="tipoEntradaRestante"
+                                formControlName="tipo_entrada_restante">
+                            <label class="form-check-label small" for="tipoEntradaRestante">Entrada Restante</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="tipoSaldo" formControlName="tipo_saldo">
+                            <label class="form-check-label small" for="tipoSaldo">Saldo</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="tipoDevolucao"
+                                formControlName="tipo_devolucao">
+                            <label class="form-check-label small" for="tipoDevolucao">Devolução</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Tabela de Parcelas Disponíveis -->
+            <div class="mb-4" *ngIf="parcelasDisponiveis.length > 0">
+                <!-- Filtros Locais -->
+                <form [formGroup]="localFiltersForm" class="mb-3">
+                    <div class="row g-2">
+                        <!-- Filtro Scores (Checkboxes) -->
+                        <div class="col-12 col-md-3" formGroupName="scores">
+                            <label class="form-label small fw-semibold text-uppercase">Scores</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="scoreA" formControlName="a">
+                                    <label class="form-check-label small" for="scoreA">A</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="scoreB" formControlName="b">
+                                    <label class="form-check-label small" for="scoreB">B</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="scoreC" formControlName="c">
+                                    <label class="form-check-label small" for="scoreC">C</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="scoreD" formControlName="d">
+                                    <label class="form-check-label small" for="scoreD">D</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="scoreE" formControlName="e">
+                                    <label class="form-check-label small" for="scoreE">E</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Filtro Status (Recebeu / Não Recebeu) -->
+                        <div class="col-12 col-md-2" formGroupName="status">
+                            <label class="form-label small fw-semibold text-uppercase">Status</label>
+                            <div class="d-flex gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="statusRecebeu"
+                                        formControlName="recebeu">
+                                    <label class="form-check-label small" for="statusRecebeu">
+                                        Recebeu
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="statusNaoRecebeu"
+                                        formControlName="nao_recebeu">
+                                    <label class="form-check-label small" for="statusNaoRecebeu">
+                                        Não recebeu
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Filtro Porcentagem Paga Até -->
+                        <div class="col-12 col-md-2">
+                            <label class="form-label small fw-semibold text-uppercase">% Paga Até</label>
+                            <input type="number" class="form-control form-control-sm"
+                                formControlName="valedasminas_porcentagem_paga_ate" placeholder="Ex: 50" min="0"
+                                max="100" step="0.01">
+                        </div>
+                        <!-- Filtro Porcentagem Paga Mais -->
+                        <div class="col-12 col-md-2">
+                            <label class="form-label small fw-semibold text-uppercase">% Paga Mais</label>
+                            <input type="number" class="form-control form-control-sm"
+                                formControlName="valedasminas_porcentagem_paga_mais" placeholder="Ex: 50" min="0"
+                                max="100" step="0.01">
+                        </div>
+                        <!-- Filtro Nome do Cliente -->
+                        <div class="col-12 col-md-2">
+                            <label class="form-label small fw-semibold text-uppercase">Nome Cliente</label>
+                            <input type="text" class="form-control form-control-sm" formControlName="nome_cliente"
+                                placeholder="Buscar por nome...">
+                        </div>
+                        <!-- Filtro Identificador Receita -->
+                        <div class="col-12 col-md-2">
+                            <label class="form-label small fw-semibold text-uppercase">Nº Título</label>
+                            <input type="text" class="form-control form-control-sm"
+                                formControlName="identificador_receita" placeholder="Buscar por nº...">
+                        </div>
+                        <!-- Botão Limpar -->
+                        <div class="col-12 col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-secondary btn-sm w-100"
+                                (click)="localFiltersForm.reset()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>
+                                Limpar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0">Parcelas Disponíveis <span class="badge bg-info">{{
+                            parcelasDisponiveisFilteradas.length }}</span></h6>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" (click)="marcarTodas()"
+                            *ngIf="(!temParcelasSelecionadas() || parcelasSelecionadas.size < parcelasDisponiveisFilteradas.length) && parcelasDisponiveisFilteradas.length > 0">
+                            <i class="bi bi-check-all me-1"></i>
+                            Marcar Todas
+                        </button>
+                        <button type="button" class="btn btn-sm btn-success" (click)="adicionarParcelasSelecionadas()"
+                            *ngIf="temParcelasSelecionadas()">
+                            <i class="bi bi-plus-lg me-1"></i>
+                            Adicionar {{ parcelasSelecionadas.size }} selecionada(s)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="desmarcarTodas()"
+                            *ngIf="temParcelasSelecionadas()">
+                            Desmarcar
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive" *ngIf="parcelasDisponiveisFilteradas.length > 0">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr class="text-uppercase">
+                                <th style="width: 50px;"></th>
+                                <th>Devedor</th>
+                                <th></th>
+                                <th>Tipo</th>
+                                <th class="text-center">Parcela</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end">Emissão</th>
+                                <th class="text-end">Vencimento</th>
+                                <th class="text-end">Valor</th>
+                                <th class="text-end">Liquidação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of parcelasDisponiveisFilteradas">
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" [id]="'check-' + item._id"
+                                            [checked]="isParcelasSelecionada(item._id)"
+                                            (change)="toggleSelecionarParcela(item._id)">
+                                        <label class="form-check-label" [for]="'check-' + item._id"></label>
+                                    </div>
+                                </td>
+                                <td class="text-uppercase">
+                                    {{item.cliente?.nome}}
+                                    <span>{{item.identificador}}</span>
+                                    <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.valedasminas_cancelado"
+                                        ngbTooltip="Qtd de dias entre Venda e Solicitação de cancelamento">
+                                        <i class="bi bi-ban me-1"></i>
+                                        {{item?.valedasminas_diff_dias_cancelamento}} dias
+                                    </span>
+                                    <span class="badge bg-danger me-1 cursor-help"
+                                        *ngIf="item?.pendencia?.tipo == 'DEBITO'"
+                                        ngbTooltip="Contratante precisa pagar">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        {{item?.pendencia.tipo}}
+                                    </span>
+                                    <span class="badge bg-secondary me-1 cursor-help"
+                                        *ngIf="item?.pendencia?.tipo == 'CREDITO'" ngbTooltip="Agência precisa pagar">
+                                        <i class="bi bi-arrow-up me-1"></i> {{item?.pendencia.tipo}}
+                                    </span>
+                                    <span
+                                        class="badge {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? 'bg-success' : 'bg-danger'}} me-1 cursor-help"
+                                        *ngIf="item?.parcelas?.tipo == 'SALDO'"
+                                        [ngbTooltip]="item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$ = Parque recebeu a parcela neste mês' : 'X = Parque não recebeu a parcela neste mês'">
+                                        {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$' : 'X'}}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <span
+                                        class="badge {{item?.valedasminas_porcentagem_mais_30 ? 'bg-success' : 'bg-warning'}} me-1 cursor-help"
+                                        ngbTooltip="Porcentagem recebida pelo parque">
+                                        {{(item?.valedasminas_porcentagem_paga || 0)?.toFixed(2)}}%
+                                    </span>
+                                </td>
+                                <td class="text-center">{{item.cliente?.score ? '(' + item.cliente?.score + ')' : ''}}
+                                </td>
+                                <td>{{item.parcelas?.tipo}}</td>
+                                <td class="text-center">{{item.parcelas?.label_parcelas}}</td>
+                                <td class="text-center">
+                                    <render-badge [badgeText]="item.parcelas?.status"></render-badge>
+                                </td>
+                                <td class="text-end">{{item.data | dateSimple}}</td>
+                                <td class="text-end">{{item.parcelas?.data_vencimento | dateSimple}}</td>
+                                <td class="text-end">{{item.parcelas?.valor_parcela | moneyBrl}}</td>
+                                <td class="text-end">{{item.parcelas?.data_recebimento | dateSimple}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mensagem quando não há parcelas com filtros aplicados -->
+                <div *ngIf="parcelasDisponiveisFilteradas.length === 0" class="alert alert-warning">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Nenhuma parcela encontrada com os filtros aplicados
+                </div>
+            </div>
+
+            <!-- Mensagem quando não há parcelas -->
+            <div *ngIf="parcelasDisponiveis.length === 0 && parcelasAdicionadas.length === 0" class="alert alert-info">
+                Utilize os filtros acima para buscar parcelas
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensagem quando borderô não foi salvo -->
+    <div class="alert alert-warning" *ngIf="!form.get('_id')?.value">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>Atenção:</strong> Salve o borderô primeiro para poder adicionar parcelas à confecção.
+    </div>
+</div>

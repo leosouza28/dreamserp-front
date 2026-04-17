@@ -13,7 +13,8 @@ body {
 /* Customizing Bootstrap primary color */
 $primary: #684696; // Verde Frigorífico
 $secondary: #A04995; // Azul Track
-$success: #5FC1C7; // Verde Médio
+// $success: #5FC1C7; // Verde Médio
+$success: #32a225; // Verde Vivo
 $info: #8BD0E0; // Azul Médio
 $warning: #E8BD65; // Amarelo técnico (alerta)
 // $danger: #DF4B93; // Vermelho controle
@@ -73,11 +74,6 @@ $navbar-dark-hover-color: #E0F2EC;
   font-weight: bold;
 }
 
-
-// body, input, button, select, textarea {
-//   text-transform: uppercase !important;
-// }
-
-input {
-  // text-transform: uppercase;
+.cursor-pointer {
+  cursor: pointer;
 }

@@ -20,28 +20,40 @@
   overflow-y: auto;
   min-height: 100vh;
 
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE e Edge antigos */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE e Edge antigos */
+}
+
+.sidebar-content {
+  padding-left: 1.2rem;
+  padding-right: 1.2rem;
 }
 
 .sidebar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari e Edge */
+  display: none;
+  /* Chrome, Safari e Edge */
 }
 
 .sidebar .nav-link {
   font-size: 1.1rem;
   font-weight: 600;
 }
+
 .sidebar .nav-link.active {
   background-color: #00c2c1;
   color: #fff;
 }
+
 .sidebar .nav-link:hover {
   background-color: #e2e6ea;
 }
+
 .nav-item {
   // font-family: "Fredoka", sans-serif;
 }
+
 .sidebar .sidebar-header {
   background-image: url("/assets/imgs/logoh1.png");
   height: 80px;
@@ -76,26 +88,45 @@
   .sidebar {
     display: block;
   }
+
   .main-content {
     margin-left: 0;
   }
+
   .bg-content {
-    padding-left: 20rem;
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+  }
+
+  .sidebar-content {
+    padding-left: 2rem;
     padding-right: 2rem;
+  }
+
+  .navbar-toggler {
+    display: block !important;
   }
 }
 
 /* Estilo do submenu */
 .submenu {
-  transform: translateY(-20px); /* Começa acima */
-  opacity: 0; /* Começa invisível */
-  overflow: hidden; /* Garante que o conteúdo não vaze */
-  max-height: 0; /* Inicialmente fechado */
-  transition: transform 0.3s ease, max-height 0.3s ease, opacity 0.3s ease; /* Animação suave */
+  transform: translateY(-20px);
+  /* Começa acima */
+  opacity: 0;
+  /* Começa invisível */
+  overflow: hidden;
+  /* Garante que o conteúdo não vaze */
+  max-height: 0;
+  /* Inicialmente fechado */
+  transition: transform 0.3s ease, max-height 0.3s ease, opacity 0.3s ease;
+  /* Animação suave */
 }
 
 .submenu.open {
-  transform: translateY(0); /* Move para a posição original */
-  opacity: 1; /* Torna o submenu visível */
-  max-height: 1000px; /* Valor grande o suficiente para o conteúdo */
+  transform: translateY(0);
+  /* Move para a posição original */
+  opacity: 1;
+  /* Torna o submenu visível */
+  max-height: 1000px;
+  /* Valor grande o suficiente para o conteúdo */
 }

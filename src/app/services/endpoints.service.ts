@@ -84,6 +84,16 @@ export class EndpointsService extends ApiService {
     postUsuarios(data: any) {
         return this.post('/v1/admin/usuarios', data);
     }
+    getBorderoById(id: string) {
+        return this.get('/v1/admin/borderos/' + id);
+    }
+    getBorderos({ perpage, page, busca, ...params }: any) {
+        let urlParams = new URLSearchParams();
+        return this.get('/v1/admin/borderos' + (urlParams.toString() ? `?${urlParams.toString()}` : ''));
+    }
+    setBordero(data: any) {
+        return this.post('/v1/admin/borderos', data);
+    }
     // Pessoas
     getPessoas({ perpage, page, busca, ...params }: any) {
         let urlParams = new URLSearchParams();
@@ -102,6 +112,33 @@ export class EndpointsService extends ApiService {
     }
     postPessoa(data: any) {
         return this.post('/v1/admin/pessoas', data);
+    }
+
+    getParcelasComissoes(params: any = {}) {
+        let urlParams = new URLSearchParams();
+        for (const key in params) {
+            if (params[key]) urlParams.append(key, params[key]);
+        }
+        return this.get('/v1/admin/receitas/parcelas-comissoes' + (urlParams.toString() ? `?${urlParams.toString()}` : ''));
+    }
+    getParcelasComissoesById(id: string) {
+        return this.get('/v1/admin/receitas/parcelas-comissoes/' + id);
+    }
+    cancelarParcelaReceita(receita_id: string, parcela_id: string, observacao?: string) {
+        return this.put(`/v1/admin/receitas/parcelas-comissoes/${receita_id}/cancelar-parcela/${parcela_id}`, { observacao });
+    }
+    cancelarParcelasReceita(receita_id: string, parcela_ids: string[], observacao?: string) {
+        return this.put(`/v1/admin/receitas/parcelas-comissoes/${receita_id}/cancelar-parcelas`, { parcela_ids, observacao });
+    }
+    editarParcelaReceita(receita_id: string, parcela_id: string, data: any) {
+        return this.put(`/v1/admin/receitas/parcelas-comissoes/${receita_id}/editar-parcela/${parcela_id}`, data);
+    }
+    getPainelParcelasComissoes(params: any = {}) {
+        return this.get('/v1/admin/receitas/parcelas-comissoes-painel');
+    }
+
+    syncOneValedasminaspark(tituloSerieHash: string) {
+        return this.get(`/cron/sync/valedasminaspark/${encodeURIComponent(tituloSerieHash)}`);
     }
 
 }

@@ -16,6 +16,9 @@ import { AuthGuard } from './services/auth-guard.service';
 import { UsuarioRefreshTokenComponent } from "./usuario-refresh-token/usuario-refresh-token.component";
 import { ComissoesAgenciaComponent } from "./admin/comissoes/comissoes-agencia/comissoes-agencia.component";
 import { ComissoesVendedoresComponent } from "./admin/comissoes/comissoes-vendedores/comissoes-vendedores.component";
+import { ComissoesAgenciaDetalhesComponent } from "./admin/comissoes/comissoes-agencia-detalhes/comissoes-agencia-detalhes.component";
+import { BorderoListarComponent } from "./admin/comissoes/bordero-listar/bordero-listar.component";
+import { BorderoFormComponent } from "./admin/comissoes/bordero-form/bordero-form.component";
 
 
 const routes: Routes = [
@@ -93,9 +96,25 @@ const routes: Routes = [
             component: ComissoesAgenciaComponent
           },
           {
+            path: "agencia/detalhes/:id",
+            component: ComissoesAgenciaDetalhesComponent
+          },
+          {
             path: "vendedores",
             component: ComissoesVendedoresComponent
-          }
+          },
+          {
+            path: "bordero/listar",
+            component: BorderoListarComponent
+          },
+          {
+            path: "bordero/form",
+            component: BorderoFormComponent
+          },
+          {
+            path: "bordero/form/:id",
+            component: BorderoFormComponent
+          },
         ]
       },
       {

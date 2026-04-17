@@ -50,6 +50,10 @@ import { UserInfoPipe } from './pipes/user-info.pipe';
 import { UsuarioRefreshTokenComponent } from './usuario-refresh-token/usuario-refresh-token.component';
 import { ComissoesAgenciaComponent } from './admin/comissoes/comissoes-agencia/comissoes-agencia.component';
 import { ComissoesVendedoresComponent } from './admin/comissoes/comissoes-vendedores/comissoes-vendedores.component';
+import { IdentificadorPipe } from './pipes/identificador.pipe';
+import { ComissoesAgenciaDetalhesComponent } from './admin/comissoes/comissoes-agencia-detalhes/comissoes-agencia-detalhes.component';
+import { BorderoListarComponent } from './admin/comissoes/bordero-listar/bordero-listar.component';
+import { BorderoFormComponent } from './admin/comissoes/bordero-form/bordero-form.component';
 
 registerLocaleData(localePt, 'pt-BR');
 
@@ -86,6 +90,7 @@ LOAD_WASM('assets/wasm/ngx-scanner-qrcode.wasm').subscribe();
     UsuarioRefreshTokenComponent,
     ImageCropperModalComponent,
     DateFromNowPipe,
+    IdentificadorPipe,
     PesoPipe,
     ListarPessoasComponent,
     FormPessoasComponent,
@@ -93,6 +98,9 @@ LOAD_WASM('assets/wasm/ngx-scanner-qrcode.wasm').subscribe();
     MultiCheckboxSelectComponent,
     ComissoesAgenciaComponent,
     ComissoesVendedoresComponent,
+    ComissoesAgenciaDetalhesComponent,
+    BorderoListarComponent,
+    BorderoFormComponent,
   ],
   imports: [
     BrowserModule,

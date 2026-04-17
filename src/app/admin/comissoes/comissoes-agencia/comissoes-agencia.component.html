@@ -1,1 +1,391 @@
-<p>comissoes-agencia works!</p>
+<div class="container-fluid">
+    <div class="row row-gap-3">
+        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h1 class="fw-bold text-primary mb-0">Comissões da Agência</h1>
+            <button type="button" class="btn btn-primary btn-sm" (click)="abrirModalAdicionarComissao()">
+                <i class="bi bi-plus-lg me-1"></i>
+                Adicionar Comissão
+            </button>
+        </div>
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-white">
+                <div class="card-body">
+                    <form [formGroup]="form" (ngSubmit)="getData()" class="mb-3">
+                        <div class="row g-2 align-items-end">
+
+                            <!-- Tipo de Data -->
+                            <div class="col-12 col-md-2">
+                                <label class="form-label small fw-semibold text-uppercase">Buscar por Data</label>
+                                <select class="form-select form-select-sm" formControlName="tipo_data">
+                                    <option value="emissao">Emissão</option>
+                                    <option value="vencimento">Vencimento</option>
+                                    <option value="recebimento">Recebimento</option>
+                                </select>
+                            </div>
+                            <!-- Data Inicial -->
+                            <div class="col-6 col-md-2">
+                                <label class="form-label small fw-semibold text-uppercase">Data Inicial</label>
+                                <input type="date" class="form-control form-control-sm" formControlName="data_inicial">
+                            </div>
+                            <!-- Data Final -->
+                            <div class="col-6 col-md-2">
+                                <label class="form-label small fw-semibold text-uppercase">Data Final</label>
+                                <input type="date" class="form-control form-control-sm" formControlName="data_final">
+                            </div>
+
+                            <!-- Botões -->
+                            <div class="col-12 col-md-2 d-flex gap-1">
+                                <button type="submit" class="btn btn-primary btn-sm w-100" [disabled]="loading">
+                                    <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+                                    <span *ngIf="!loading"><i class="bi bi-search me-1"></i>Buscar</span>
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <!-- Tipo de Parcela -->
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold text-uppercase me-3">Tipo de Parcela</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="tipoEntrada"
+                                        formControlName="tipo_entrada">
+                                    <label class="form-check-label small" for="tipoEntrada">Entrada</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="tipoEntradaRestante"
+                                        formControlName="tipo_entrada_restante">
+                                    <label class="form-check-label small" for="tipoEntradaRestante">Entrada
+                                        Restante</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="tipoSaldo"
+                                        formControlName="tipo_saldo">
+                                    <label class="form-check-label small" for="tipoSaldo">Saldo</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="tipoDevolucao"
+                                        formControlName="tipo_devolucao">
+                                    <label class="form-check-label small" for="tipoDevolucao">Devolução</label>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+
+                    <div class="row row-gap-3">
+                        <div class="col-12">
+                            <div class="row g-2">
+                                <div class="col-12 col-md-6 col-xl-3" *ngFor="let resumo of resumoTipos">
+                                    <div class="card border-0 shadow-sm h-100 bg-white">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                <div>
+                                                    <small
+                                                        class="text-muted text-uppercase fw-semibold d-block">Tipo</small>
+                                                    <div class="fw-bold fs-6">{{ resumo.label }}</div>
+                                                </div>
+                                                <span class="badge border text-dark">{{ resumo.quantidade }}
+                                                    parcela(s)</span>
+                                            </div>
+                                            <div
+                                                class="d-flex justify-content-between align-items-center resumo-tipo-linha">
+                                                <span class="small text-muted">Total</span>
+                                                <span class="fw-bold text-dark">{{ resumo.total | moneyBrl }}</span>
+                                            </div>
+                                            <div
+                                                class="d-flex justify-content-between align-items-center resumo-tipo-linha">
+                                                <span class="small text-muted">Liquidado</span>
+                                                <span class="fw-semibold text-primary">{{ resumo.liquidado | moneyBrl
+                                                    }}</span>
+                                            </div>
+                                            <div
+                                                class="d-flex justify-content-between align-items-center resumo-tipo-linha">
+                                                <span class="small text-muted">Pendente</span>
+                                                <span class="fw-semibold text-warning-emphasis">{{ resumo.pendente |
+                                                    moneyBrl }}</span>
+                                            </div>
+                                            <div
+                                                class="d-flex justify-content-between align-items-center resumo-tipo-linha mb-0">
+                                                <span class="small text-muted">Cancelado</span>
+                                                <span class="fw-semibold text-danger">{{ resumo.cancelado | moneyBrl
+                                                    }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filtros Locais -->
+                        <div class="col-12">
+                            <form [formGroup]="localFiltersForm" class="mb-3">
+                                <div class="row g-2">
+                                    <!-- Filtro Scores (Checkboxes) -->
+                                    <div class="col-12 col-md-3" formGroupName="scores">
+                                        <label class="form-label small fw-semibold text-uppercase">Scores</label>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="scoreA" formControlName="a">
+                                                <label class="form-check-label small" for="scoreA">A</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="scoreB" formControlName="b">
+                                                <label class="form-check-label small" for="scoreB">B</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="scoreC" formControlName="c">
+                                                <label class="form-check-label small" for="scoreC">C</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="scoreD" formControlName="d">
+                                                <label class="form-check-label small" for="scoreD">D</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="scoreE" formControlName="e">
+                                                <label class="form-check-label small" for="scoreE">E</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Filtro Status (Recebeu / Não Recebeu) -->
+                                    <div class="col-12 col-md-2" formGroupName="status">
+                                        <label class="form-label small fw-semibold text-uppercase">Status</label>
+                                        <div class="d-flex gap-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="statusRecebeu" formControlName="recebeu">
+                                                <label class="form-check-label small" for="statusRecebeu">
+                                                    Recebeu
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="statusNaoRecebeu" formControlName="nao_recebeu">
+                                                <label class="form-check-label small" for="statusNaoRecebeu">
+                                                    Não recebeu
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Filtro Porcentagem Paga Até -->
+                                    <div class="col-12 col-md-2">
+                                        <label class="form-label small fw-semibold text-uppercase">% Paga Até</label>
+                                        <input type="number" class="form-control form-control-sm" formControlName="valedasminas_porcentagem_paga_ate"
+                                            placeholder="Ex: 50" min="0" max="100" step="0.01">
+                                    </div>
+                                    <!-- Filtro Porcentagem Paga Mais -->
+                                    <div class="col-12 col-md-2">
+                                        <label class="form-label small fw-semibold text-uppercase">% Paga Mais</label>
+                                        <input type="number" class="form-control form-control-sm" formControlName="valedasminas_porcentagem_paga_mais"
+                                            placeholder="Ex: 50" min="0" max="100" step="0.01">
+                                    </div>
+                                    <!-- Filtro Nome do Cliente -->
+                                    <div class="col-12 col-md-2">
+                                        <label class="form-label small fw-semibold text-uppercase">Nome Cliente</label>
+                                        <input type="text" class="form-control form-control-sm" formControlName="nome_cliente"
+                                            placeholder="Buscar por nome...">
+                                    </div>
+                                    <!-- Filtro Identificador Receita -->
+                                    <div class="col-12 col-md-2">
+                                        <label class="form-label small fw-semibold text-uppercase">Nº Título</label>
+                                        <input type="text" class="form-control form-control-sm" formControlName="identificador_receita"
+                                            placeholder="Buscar por nº...">
+                                    </div>
+                                    <!-- Botão Limpar -->
+                                    <div class="col-12 col-md-2 d-flex align-items-end">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm w-100"
+                                            (click)="localFiltersForm.reset()">
+                                            <i class="bi bi-arrow-clockwise me-1"></i>
+                                            Limpar
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr class="text-uppercase">
+                                            <th>Devedor</th>
+                                            <th></th>
+                                            <th></th>
+                                            <th>Tipo</th>
+                                            <th class="text-center">Parcela</th>
+                                            <th class="text-center">Status</th>
+                                            <th class="text-end">Emissão</th>
+                                            <th class="text-end">Vencimento</th>
+                                            <th class="text-end">Valor</th>
+                                            <th class="text-end">Liquidação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of dataFilterada.lista" class="">
+                                            <td class="text-uppercase">
+                                                <span class="cursor-pointer"
+                                                    [routerLink]="['/admin/comissoes/agencia/detalhes', item._id]">
+                                                    {{item.cliente.nome}}
+                                                </span>
+                                                <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.valedasminas_cancelado"
+                                                    ngbTooltip="Qtd de dias entre Venda e Solicitação de cancelamento">
+                                                    <i class="bi bi-ban me-1"></i>
+                                                    {{item?.valedasminas_diff_dias_cancelamento}} dias
+                                                </span>
+                                                <span class="badge bg-danger me-1 cursor-help"
+                                                    *ngIf="item?.pendencia?.tipo == 'DEBITO'"
+                                                    ngbTooltip="Contratante precisa pagar">
+                                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                                    {{item?.pendencia.tipo}}
+                                                </span>
+                                                <span class="badge bg-secondary me-1 cursor-help"
+                                                    *ngIf="item?.pendencia?.tipo == 'CREDITO'"
+                                                    ngbTooltip="Agência precisa pagar">
+                                                    <i class="bi bi-arrow-up me-1"></i> {{item?.pendencia.tipo}}
+                                                </span>
+                                                <span class="badge {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? 'bg-success' : 'bg-danger'}} me-1 cursor-help" 
+                                                    *ngIf="item?.parcelas?.tipo == 'SALDO'"
+                                                    [ngbTooltip]="item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$ = Parque recebeu a parcela neste mês' : 'X = Parque não recebeu a parcela neste mês'">
+                                                    {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$' : 'X'}}
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <span
+                                                    class="badge {{item?.valedasminas_porcentagem_mais_30 ? 'bg-success' : 'bg-warning'}} me-1 cursor-help"
+                                                    ngbTooltip="Porcentagem recebida pelo parque">
+                                                    {{(item?.valedasminas_porcentagem_paga || 0)?.toFixed(2)}}%
+                                                </span>
+                                            </td>
+                                            <td class="text-center">{{item.cliente.score ? '(' + item.cliente.score +
+                                                ')' : ''}}</td>
+                                            <td>{{item.parcelas.tipo}}</td>
+                                            <td class="text-center">{{item.parcelas.label_parcelas}}</td>
+                                            <td class="text-center">
+                                                <render-badge [badgeText]="item.parcelas.status"></render-badge>
+                                            </td>
+                                            <td class="text-end">{{item.data | dateSimple}}</td>
+                                            <td class="text-end">{{item.parcelas.data_vencimento | dateSimple}}</td>
+                                            <td class="text-end">{{item.parcelas.valor_parcela | moneyBrl}}</td>
+                                            <td class="text-end">{{item.parcelas.data_recebimento | dateSimple}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Legenda de Badges -->
+                            <div class="mt-4 pt-3 border-top">
+                                <h6 class="fw-semibold mb-3">
+                                    <i class="bi bi-info-circle me-2"></i>Legenda de Badges
+                                </h6>
+                                <div class="row g-3">
+                                    <!-- Cancelamento -->
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="bg-light p-3 rounded">
+                                            <div class="mb-2">
+                                                <span class="badge bg-danger me-2">
+                                                    <i class="bi bi-ban me-1"></i>Dias
+                                                </span>
+                                                <small class="text-muted">Cancelamento</small>
+                                            </div>
+                                            <small class="text-secondary">Qtd de dias entre Venda e Solicitação de cancelamento</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Débito/Crédito -->
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="bg-light p-3 rounded">
+                                            <div class="mb-2">
+                                                <span class="badge bg-danger me-2">
+                                                    <i class="bi bi-exclamation-triangle me-1"></i>DÉBITO
+                                                </span>
+                                                <span class="badge bg-secondary me-2">
+                                                    <i class="bi bi-arrow-up me-1"></i>CRÉDITO
+                                                </span>
+                                            </div>
+                                            <small class="text-secondary">Débito: Contratante paga | Crédito: Agência paga</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Recebimento -->
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="bg-light p-3 rounded">
+                                            <div class="mb-2">
+                                                <span class="badge bg-success me-2">$</span>
+                                                <span class="badge bg-danger me-2">X</span>
+                                                <small class="text-muted">(Tipo Saldo)</small>
+                                            </div>
+                                            <small class="text-secondary">$: Parque recebeu | X: Parque não recebeu</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Porcentagem -->
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="bg-light p-3 rounded">
+                                            <div class="mb-2">
+                                                <span class="badge bg-success me-2">% Verde</span>
+                                                <span class="badge bg-warning me-2">% Amarelo</span>
+                                            </div>
+                                            <small class="text-secondary">Porcentagem recebida pelo parque (Verde: ≥30% | Amarelo: <30%)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #modalAdicionarComissao let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">Adicionar Comissão</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()" [disabled]="loadingAddComissao"></button>
+    </div>
+    <div class="modal-body" [formGroup]="addComissaoForm">
+        <div class="mb-3">
+            <label class="form-label small fw-semibold text-uppercase">Origem</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="origemValeDasMinas" value="valedasminaspark"
+                    formControlName="origem">
+                <label class="form-check-label" for="origemValeDasMinas">Vale das Minas</label>
+            </div>
+        </div>
+
+        <div>
+            <label class="form-label small fw-semibold text-uppercase">titulo_serie_hash</label>
+            <input type="text" class="form-control" formControlName="titulo_serie_hash" placeholder="000170/000001">
+            <small class="text-muted">Exemplo: 000170/000001</small>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.dismiss()"
+            [disabled]="loadingAddComissao">Cancelar</button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="processarAdicionarComissao()"
+            [disabled]="loadingAddComissao">
+            <span *ngIf="loadingAddComissao" class="spinner-border spinner-border-sm me-1"></span>
+            Processar
+        </button>
+    </div>
+</ng-template>
+
+<ng-template #modalPosProcessamentoComissao let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">Comissão processada com sucesso</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <p class="mb-2">Deseja visualizar a receita agora ou apenas atualizar a página atual?</p>
+        <div class="small text-muted" *ngIf="ultimaReceitaProcessada as receita">
+            <div><strong>Identificador:</strong> {{ receita.identificador || '—' }}</div>
+            <div><strong>ID:</strong> {{ receita._id || '—' }}</div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="atualizarPaginaAtualComissoes()">
+            Só atualizar página
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="visualizarReceitaProcessada()">
+            Visualizar receita
+        </button>
+    </div>
+</ng-template>

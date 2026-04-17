@@ -1,5 +1,5 @@
-<nav class="navbar navbar-expand-lg bg-white d-block d-lg-none shadow-sm border-bottom">
-    <div class="container-fluid">
+<nav class="navbar navbar-expand-lg bg-white shadow-sm border-bottom">
+    <div class="container-fluid sidebar-content">
         <a class="navbar-brand" [routerLink]="['/admin/inicio']"></a>
         <button class="navbar-toggler" type="button" (click)="openMenu(content)"
             style="background-color: var(--bs-white); border-color: var(--bs-secondary);">
@@ -9,15 +9,13 @@
 </nav>
 
 <div class="bg-content">
-    <div class="sidebar shadow-sm border rounded-5 p-3">
+    <!-- <div class="sidebar shadow-sm border rounded-5 p-3">
         <div class="sidebar-header"></div>
-
         <div *ngIf="logged_user" class="d-flex flex-column mb-3 text-center  ">
             <p class="mb-2 fw-bold text-muted">Operador</p>
             <p class="mb-0 fw-bold">{{logged_user.nome}}</p>
             <p class="mb-2 text-muted">{{logged_user.documento | cpfCnpj}}</p>
         </div>
-
         <ul class="nav flex-column gap-2 mb-3">
             <li class="nav-item text-dark rounded shadow-sm" *ngFor="let item of menu">
                 <a class="nav-link text-dark d-flex justify-content-between align-items-center"
@@ -30,7 +28,6 @@
                     <i *ngIf="item.submenu" class="bi"
                         [ngClass]="{'bi-chevron-down': item.open, 'bi-chevron-right': !item.open}"></i>
                 </a>
-                <!-- Submenu -->
                 <ul [ngClass]="{'submenu': true, 'open': item.open}" class="nav flex-column ms-0 bg-warning-subtle">
                     <li class="nav-item text-dark" *ngFor="let subItem of item.submenu">
                         <a class="nav-link text-dark" href="javascript:void(0)" [routerLink]="[subItem.link]"
@@ -52,7 +49,7 @@
             </small>
             <small class="text-info">Versão {{version}}</small>
         </div>
-    </div>
+    </div> -->
 
     <router-outlet></router-outlet>
 </div>

@@ -155,6 +155,12 @@ export class AdminContainerComponent implements OnInit {
         nome: 'Comissões',
         submenu: [
           {
+            scopes: ["comissoes.bordero_leitura"],
+            icon: 'bi bi-file-spreadsheet me-2',
+            nome: 'Borderôs',
+            link: '/admin/comissoes/bordero/listar'
+          },
+          {
             scopes: ["comissoes.comissoes_agencia_leitura"],
             icon: 'bi bi-percent me-2',
             nome: 'Comissões da Agência',

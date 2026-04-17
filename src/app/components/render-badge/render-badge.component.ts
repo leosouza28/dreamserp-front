@@ -19,6 +19,8 @@ export class RenderBadgeComponent implements OnInit, OnChanges {
   }
 
   private updateBadgeVariant(): void {
+    if (this.badgeText == 'LIQUIDADO') this.badgeVariant = 'badge text-bg-success';
+    if (this.badgeText == 'RECEBIDO') this.badgeVariant = 'badge text-bg-success';
     if (this.badgeText == 'ATIVO') this.badgeVariant = 'badge text-bg-success';
     if (this.badgeText == 'FINALIZADA') this.badgeVariant = 'badge text-bg-success';
     if (this.badgeText == 'VALIDO') this.badgeVariant = 'badge text-bg-success';

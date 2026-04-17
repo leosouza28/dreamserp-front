@@ -1,0 +1,39 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="fw-bold ">Borderôs</h1>
+        </div>
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <form [formGroup]="form" (submit)="query()" class="p-3">
+                    <div class="d-flex flex-row gap-2">
+                        <button type="button" class="btn btn-primary" [routerLink]="['/admin/comissoes/bordero/form']">
+                            <i class="bi bi-plus-lg me-2"></i> Adicionar
+                        </button>
+                    </div>
+                </form>
+                <div class="px-3 table-responsive">
+                    <table-template [total]="data.total" [loading]="loading" [paginacaoAtiva]="true">
+                        <table class="table table-borderless table-hover border-bottom">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Identificador</th>
+                                    <th class="text-end">Valor&nbsp;Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of data.lista" class="cursor-pointer"
+                                    [routerLink]="['/admin/comissoes/bordero/form', item._id]">
+                                    <td>{{item.data_inicial | dateSimple}} - {{item.data_final | dateSimple}}</td>
+                                    <td>{{item?.identificador || "Não informado"}}</td>
+                                    <td class="text-end">{{(item?.valor_total || 0 ) | moneyBrl}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </table-template>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
