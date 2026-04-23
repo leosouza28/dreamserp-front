@@ -1,6 +1,6 @@
 {
   "name": "dreamserp-front",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "scripts": {
     "ng": "ng",
     "commit": "git add . ; git commit -m 'leo' ; git push",
