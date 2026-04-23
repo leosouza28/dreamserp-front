@@ -216,12 +216,12 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
       // Substitui as parcelas pelo array de IDs
       value.parcelas = parcelasIds;
 
-      await this.api.setBordero(value);
+      let response = await this.api.setBordero(value);
       this.alert.showSuccess("Borderô salvo com sucesso!");
 
       if (!value._id) {
         // atualiza a rota com esse novo _id
-        this.router.navigate(['/admin/comissoes/bordero/form', value._id], { replaceUrl: true });
+        this.router.navigate(['/admin/comissoes/bordero/form', response._id], { replaceUrl: true });
       }
     } catch (error: any) {
       this.alert.showDanger(error);
