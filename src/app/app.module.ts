@@ -56,6 +56,8 @@ import { BorderoListarComponent } from './admin/comissoes/bordero-listar/bordero
 import { BorderoFormComponent } from './admin/comissoes/bordero-form/bordero-form.component';
 import { ListarCrmComponent } from './admin/crm/listar-crm/listar-crm.component';
 import { FormCrmComponent } from './admin/crm/form-crm/form-crm.component';
+import { DateRangePickerComponent } from './components/date-range-picker/date-range-picker.component';
+import { PreviewBorderoComponent } from './admin/comissoes/preview-bordero/preview-bordero.component';
 
 registerLocaleData(localePt, 'pt-BR');
 
@@ -105,6 +107,8 @@ LOAD_WASM('assets/wasm/ngx-scanner-qrcode.wasm').subscribe();
     BorderoFormComponent,
     ListarCrmComponent,
     FormCrmComponent,
+    DateRangePickerComponent,
+    PreviewBorderoComponent,
   ],
   imports: [
     BrowserModule,

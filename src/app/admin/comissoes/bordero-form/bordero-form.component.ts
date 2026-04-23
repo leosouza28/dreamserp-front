@@ -39,6 +39,8 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
     { value: 'DEVOLUCAO', label: 'Devolução' }
   ];
 
+  private readonly ordemTiposParcela: string[] = ['ENTRADA', 'ENTRADA RESTANTE', 'SALDO', 'DEVOLUCAO'];
+
   constructor() {
     this.form = this.fb.group({
       _id: "",
@@ -52,13 +54,16 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
         razao_social: this.fb.control(''),
       }),
       forma_pagamento: "",
-      parcelas: this.fb.control([])
+      data_pagamento: "",
+      parcelas: this.fb.control([]),
+      fechado: this.fb.control(false)
     });
 
     this.searchForm = this.fb.group({
-      tipo_data: ['emissao'],
-      data_inicial: [null],
-      data_final: [null],
+      data_emissao_inicial: [null],
+      data_emissao_final: [null],
+      data_vencimento_inicial: [null],
+      data_vencimento_final: [null],
       tipo_entrada: [false],
       tipo_entrada_restante: [false],
       tipo_saldo: [false],
@@ -69,6 +74,11 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
       status: this.fb.group({
         recebeu: [false],
         nao_recebeu: [false]
+      }),
+      status_parcela: this.fb.group({
+        liquidado: [false],
+        pendente: [false],
+        cancelado: [false]
       }),
       scores: this.fb.group({
         a: [false],
@@ -85,7 +95,6 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.activatedRoute.params.subscribe(params => {
-      console.log(params);
       if (!!params['id']) {
         this.getBorderoById(params['id']);
       } else {
@@ -105,6 +114,9 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
     // Listeners para filtros locais
     this.localFiltersForm.get('status.recebeu')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
     this.localFiltersForm.get('status.nao_recebeu')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
+    this.localFiltersForm.get('status_parcela.liquidado')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
+    this.localFiltersForm.get('status_parcela.pendente')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
+    this.localFiltersForm.get('status_parcela.cancelado')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
     this.localFiltersForm.get('scores.a')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
     this.localFiltersForm.get('scores.b')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
     this.localFiltersForm.get('scores.c')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
@@ -143,21 +155,22 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
     this.loading = true;
     try {
       let bordero = await this.api.getBorderoById(id);
-      console.log(bordero)
-      
+
       // Carrega as parcelas já vinculadas ao bordero
       if (bordero.parcelas && Array.isArray(bordero.parcelas)) {
         this.parcelasAdicionadas = bordero.parcelas;
       }
-      
+
       this.form.patchValue({
         _id: bordero._id,
         data_inicial: bordero.data_inicial.split("T")[0],
         data_final: bordero.data_final.split("T")[0],
+        data_pagamento: bordero.data_pagamento ? bordero.data_pagamento.split("T")[0] : "",
         identificador: bordero.identificador,
         pessoa: bordero.pessoa,
         forma_pagamento: bordero?.forma_pagamento || "",
-        parcelas: this.parcelasAdicionadas
+        parcelas: this.parcelasAdicionadas,
+        fechado: bordero.fechado || false
       })
       // Aplica busca com as datas carregadas
       this.aplicarBuscaSeDatasDefinidas();
@@ -173,11 +186,10 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
     const dataFinal = this.form.get('data_final')?.value;
 
     if (dataInicial && dataFinal) {
-      // Copia as datas para o form de busca
+      // Pré-preenche o range de vencimento com o período do borderô
       this.searchForm.patchValue({
-        data_inicial: dataInicial,
-        data_final: dataFinal,
-        tipo_data: 'vencimento'
+        data_vencimento_inicial: dataInicial,
+        data_vencimento_final: dataFinal,
       });
       // Executa a busca
       this.buscarParcelas();
@@ -199,10 +211,10 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
         receita_id: parcela._id,
         parcela_id: parcela.parcelas?._id || parcela._id
       }));
-      
+
       // Substitui as parcelas pelo array de IDs
       value.parcelas = parcelasIds;
-      
+
       await this.api.setBordero(value);
       this.alert.showSuccess("Borderô salvo com sucesso!");
     } catch (error: any) {
@@ -214,40 +226,37 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
 
   async buscarParcelas() {
     try {
-      if (!this.searchForm.get('data_inicial')?.value || !this.searchForm.get('data_final')?.value) {
-        this.alert.showWarning("Preencha as datas para buscar");
-        return;
-      }
-
       this.loadingSearch = true;
-      const { tipo_data, tipo_entrada, tipo_entrada_restante, tipo_saldo, tipo_devolucao, data_inicial, data_final, nome_cliente, numero_titulo } = this.searchForm.getRawValue();
-      
+      const { data_emissao_inicial, data_emissao_final, data_vencimento_inicial, data_vencimento_final, tipo_entrada, tipo_entrada_restante, tipo_saldo, tipo_devolucao, nome_cliente, numero_titulo } = this.searchForm.getRawValue();
+
       const params: any = {};
-      if (tipo_data) params['tipo_data'] = tipo_data;
-      
+      if (data_emissao_inicial) params['data_emissao_inicial'] = data_emissao_inicial;
+      if (data_emissao_final) params['data_emissao_final'] = data_emissao_final;
+      if (data_vencimento_inicial) params['data_vencimento_inicial'] = data_vencimento_inicial;
+      if (data_vencimento_final) params['data_vencimento_final'] = data_vencimento_final;
+
       const tipos: string[] = [];
       if (tipo_entrada) tipos.push('ENTRADA');
       if (tipo_entrada_restante) tipos.push('ENTRADA RESTANTE');
       if (tipo_saldo) tipos.push('SALDO');
       if (tipo_devolucao) tipos.push('DEVOLUCAO');
       if (tipos.length > 0) params['tipo'] = tipos.join(',');
-      
-      if (data_inicial) params['data_inicial'] = data_inicial;
-      if (data_final) params['data_final'] = data_final;
+
       if (nome_cliente) params['nome_cliente'] = nome_cliente;
       if (numero_titulo) params['numero_titulo'] = numero_titulo;
 
 
       params['exclui_liquidados'] = 1; // Exclui parcelas já liquidadas, pois não podem ser adicionadas ao borderô
       const resultado = await this.api.getParcelasComissoes(params);
-      
+
       // Filtra as parcelas para excluir as que ja foram adicionadas ao borderô
-      const idsAdicionadas = this.parcelasAdicionadas.map(p => p._id || p.id);
-      this.parcelasDisponiveis = (resultado.lista || []).filter((p: any) => !idsAdicionadas.includes(p._id || p.id));
-      
+      const idsAdicionadas = this.parcelasAdicionadas.map(p => p.parcelas?._id);
+      this.parcelasDisponiveis = (resultado.lista || []).filter((p: any) => !idsAdicionadas.includes(p.parcelas?._id));
+
+
       // Aplica filtros locais após buscar
       this.aplicarFiltrosLocais();
-      
+
     } catch (error: any) {
       console.error(error);
       this.alert.showDanger(error?.message || "Erro ao buscar parcelas");
@@ -263,7 +272,7 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
     }
 
     const formValue = this.localFiltersForm.getRawValue();
-    const { status, scores, valedasminas_porcentagem_paga_ate, valedasminas_porcentagem_paga_mais, busca_geral } = formValue;
+    const { status, status_parcela, scores, valedasminas_porcentagem_paga_ate, valedasminas_porcentagem_paga_mais, busca_geral } = formValue;
 
     // Map de scores selecionados
     const scoresMap: { [key: string]: string } = {
@@ -288,7 +297,20 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Filtro 2: cliente.score (múltiplos scores podem ser selecionados)
+      // Filtro 2: status da parcela (LIQUIDADO, PENDENTE, CANCELADO)
+      const statusParcelaSelecionados: string[] = [];
+      if (status_parcela.liquidado) statusParcelaSelecionados.push('LIQUIDADO');
+      if (status_parcela.pendente) statusParcelaSelecionados.push('PENDENTE');
+      if (status_parcela.cancelado) statusParcelaSelecionados.push('CANCELADO');
+
+      if (statusParcelaSelecionados.length > 0) {
+        const itemStatus = (item.parcelas?.status || '').toUpperCase();
+        if (!statusParcelaSelecionados.includes(itemStatus)) {
+          return false;
+        }
+      }
+
+      // Filtro 3: cliente.score (múltiplos scores podem ser selecionados)
       if (scoresSelecionados.length > 0) {
         if (!scoresSelecionados.includes(item.cliente?.score)) {
           return false;
@@ -324,38 +346,52 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
 
       return true;
     });
+
+    // order by cliente.nome
+    this.parcelasDisponiveisFilteradas.sort((a, b) => {
+      const nomeA = a.cliente?.nome || '';
+      const nomeB = b.cliente?.nome || '';
+      return nomeA.localeCompare(nomeB);
+    });
   }
 
   adicionarParcela(parcela: any) {
     // Verifica se já foi adicionada
-    if (this.parcelasAdicionadas.some(p => p._id === parcela._id)) {
+    if (this.parcelasAdicionadas.some(p => (p.parcelas._id || p.parcelas.id) === (parcela.parcelas._id || parcela.parcelas.id))) {
       this.alert.showWarning("Esta parcela já foi adicionada");
+      return;
+    }
+    if ((parcela.parcelas?.status || '').toUpperCase() === 'CANCELADO') {
+      this.alert.showWarning("Parcelas canceladas não podem ser adicionadas ao borderô");
       return;
     }
 
     this.parcelasAdicionadas.push(parcela);
-    this.parcelasDisponiveis = this.parcelasDisponiveis.filter(p => p._id !== parcela._id);
+    this.parcelasDisponiveis = this.parcelasDisponiveis.filter(p => (p.parcelas._id || p.parcelas.id) !== (parcela.parcelas._id || parcela.parcelas.id));
     this.form.get('parcelas')?.setValue(this.parcelasAdicionadas);
+    this.salvarEAtualizar();
   }
 
   removerParcela(parcelaId: string) {
-    const parcela = this.parcelasAdicionadas.find(p => p._id === parcelaId);
-    if (parcela) {
-      this.parcelasAdicionadas = this.parcelasAdicionadas.filter(p => p._id !== parcelaId);
+    const parcelaIndex = this.parcelasAdicionadas.findIndex(p => (p.parcelas._id || p.parcelas.id) === parcelaId);
+    if (parcelaIndex !== -1) {
+      const parcela = this.parcelasAdicionadas[parcelaIndex];
+      this.parcelasAdicionadas.splice(parcelaIndex, 1);
       this.parcelasDisponiveis.push(parcela);
       this.form.get('parcelas')?.setValue(this.parcelasAdicionadas);
-      
+
       // Emite evento para atualizar com debounce
       this.atualizarParcelas$.next();
     }
   }
 
   isParcelaAdicionada(parcelaId: string): boolean {
-    return this.parcelasAdicionadas.some(p => p._id === parcelaId);
+    return this.parcelasAdicionadas.some(p => (p.parcelas._id || p.parcelas.id) === parcelaId);
   }
 
   get totalCredito(): number {
     return (this.parcelasAdicionadas ?? []).reduce((acc, item) => {
+      if ((item?.parcelas?.tipo || '').toUpperCase() === 'ENTRADA') return acc;
       const valor = Number(item?.parcelas?.valor_parcela || 0);
       return valor > 0 ? acc + valor : acc;
     }, 0);
@@ -363,13 +399,55 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
 
   get totalDebito(): number {
     return (this.parcelasAdicionadas ?? []).reduce((acc, item) => {
+      if ((item?.parcelas?.tipo || '').toUpperCase() === 'ENTRADA') return acc;
       const valor = Number(item?.parcelas?.valor_parcela || 0);
       return valor < 0 ? acc + Math.abs(valor) : acc;
     }, 0);
   }
 
+  entradaAccordionAberto = false;
+
+  get gruposParcelasAdicionadasPrincipais(): { tipo: string; itens: any[]; subtotal: number }[] {
+    return this.gruposParcelasAdicionadasPorTipo.filter(g => g.tipo !== 'ENTRADA');
+  }
+
+  get grupoParcelasEntrada(): { tipo: string; itens: any[]; subtotal: number } | null {
+    return this.gruposParcelasAdicionadasPorTipo.find(g => g.tipo === 'ENTRADA') ?? null;
+  }
+
+  get gruposParcelasAdicionadasPorTipo(): { tipo: string; itens: any[]; subtotal: number }[] {
+    const grupos: Record<string, any[]> = {};
+
+    for (const item of this.parcelasAdicionadas ?? []) {
+      const tipo = (item?.parcelas?.tipo || 'OUTROS').toUpperCase();
+      if (!grupos[tipo]) {
+        grupos[tipo] = [];
+      }
+      grupos[tipo].push(item);
+    }
+
+    const tiposOrdenados = Object.keys(grupos).sort((a, b) => {
+      const idxA = this.ordemTiposParcela.indexOf(a);
+      const idxB = this.ordemTiposParcela.indexOf(b);
+      if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+      if (idxA === -1) return 1;
+      if (idxB === -1) return -1;
+      return idxA - idxB;
+    });
+
+    return tiposOrdenados.map(tipo => ({
+      tipo,
+      itens: grupos[tipo],
+      subtotal: grupos[tipo].reduce((acc, item) => acc + Number(item?.parcelas?.valor_parcela || 0), 0)
+    }));
+  }
+
   get subtotal(): number {
-    return (this.parcelasAdicionadas ?? []).reduce((acc, item) => acc + Number(item?.parcelas?.valor_parcela || 0), 0);
+    return this.totalCredito - this.totalDebito;
+  }
+
+  get isBorderoFechado(): boolean {
+    return this.form.get('fechado')?.value === true;
   }
 
   toggleSelecionarParcela(parcelaId: string): void {
@@ -384,6 +462,55 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
     return this.parcelasSelecionadas.has(parcelaId);
   }
 
+  private getParcelaId(item: any): string {
+    let retorno = item?.parcelas?._id || "";
+    return retorno;
+  }
+
+  get totalMarcadoFiltrado(): number {
+    return (this.parcelasDisponiveisFilteradas ?? []).reduce((acc, item) => {
+      const parcelaId = this.getParcelaId(item);
+      if (!parcelaId || !this.parcelasSelecionadas.has(parcelaId)) {
+        return acc;
+      }
+      return acc + Number(item?.parcelas?.valor_parcela || 0);
+    }, 0);
+  }
+
+  get quantidadeMarcadaFiltrada(): number {
+    return (this.parcelasDisponiveisFilteradas ?? []).reduce((acc, item) => {
+      const parcelaId = this.getParcelaId(item);
+      return parcelaId && this.parcelasSelecionadas.has(parcelaId) ? acc + 1 : acc;
+    }, 0);
+  }
+
+  get gruposParcelasFiltradasPorTipo(): { tipo: string; itens: any[]; subtotal: number }[] {
+    const grupos: Record<string, any[]> = {};
+
+    for (const item of this.parcelasDisponiveisFilteradas ?? []) {
+      const tipo = (item?.parcelas?.tipo || 'OUTROS').toUpperCase();
+      if (!grupos[tipo]) {
+        grupos[tipo] = [];
+      }
+      grupos[tipo].push(item);
+    }
+
+    const tiposOrdenados = Object.keys(grupos).sort((a, b) => {
+      const idxA = this.ordemTiposParcela.indexOf(a);
+      const idxB = this.ordemTiposParcela.indexOf(b);
+      if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+      if (idxA === -1) return 1;
+      if (idxB === -1) return -1;
+      return idxA - idxB;
+    });
+
+    return tiposOrdenados.map(tipo => ({
+      tipo,
+      itens: grupos[tipo],
+      subtotal: grupos[tipo].reduce((acc, item) => acc + Number(item?.parcelas?.valor_parcela || 0), 0)
+    }));
+  }
+
   temParcelasSelecionadas(): boolean {
     return this.parcelasSelecionadas.size > 0;
   }
@@ -392,8 +519,9 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
     const parcelasToAdd: any[] = [];
 
     for (const parcelaId of this.parcelasSelecionadas) {
-      const parcela = this.parcelasDisponiveis.find(p => (p._id || p.id) === parcelaId);
-      if (parcela && !this.parcelasAdicionadas.some(p => (p._id || p.id) === parcelaId)) {
+      const parcela = this.parcelasDisponiveis.find(p => (p.parcelas._id || p.parcelas.id) === parcelaId);
+      if (parcela && !this.parcelasAdicionadas.some(p => (p.parcelas._id || p.parcelas.id) === parcelaId)) {
+        if ((parcela.parcelas?.status || '').toUpperCase() === 'CANCELADO') continue;
         parcelasToAdd.push(parcela);
       }
     }
@@ -405,28 +533,46 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
 
     // Adiciona todas as parcelas
     this.parcelasAdicionadas.push(...parcelasToAdd);
-    
+
     // Remove das disponíveis
     for (const parcela of parcelasToAdd) {
-      this.parcelasDisponiveis = this.parcelasDisponiveis.filter(p => (p._id || p.id) !== (parcela._id || parcela.id));
+      this.parcelasDisponiveis = this.parcelasDisponiveis.filter(p => (p.parcelas._id || p.parcelas.id) !== (parcela.parcelas._id || parcela.parcelas.id));
     }
 
     // Atualiza o form
     this.form.get('parcelas')?.setValue(this.parcelasAdicionadas);
-    
+
     // Limpa seleção
     this.parcelasSelecionadas.clear();
-    
-    this.alert.showSuccess(`${parcelasToAdd.length} parcela(s) adicionada(s)`);
+
+    this.salvarEAtualizar();
   }
 
   desmarcarTodas(): void {
     this.parcelasSelecionadas.clear();
   }
 
+  private async salvarEAtualizar(): Promise<void> {
+    try {
+      this.loading = true;
+      const value = this.form.getRawValue();
+      value.parcelas = (this.parcelasAdicionadas || []).map(parcela => ({
+        receita_id: parcela._id,
+        parcela_id: parcela.parcelas?._id || parcela._id
+      }));
+      await this.api.setBordero(value);
+      this.alert.showSuccess('Borderô salvo com sucesso!');
+      this.buscarParcelas();
+    } catch (error: any) {
+      this.alert.showDanger(error);
+    } finally {
+      this.loading = false;
+    }
+  }
+
   marcarTodas(): void {
     for (const parcela of this.parcelasDisponiveisFilteradas) {
-      this.parcelasSelecionadas.add(parcela._id || parcela.id);
+      this.parcelasSelecionadas.add(this.getParcelaId(parcela));
     }
   }
 
@@ -501,4 +647,61 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
     }
     return valor;
   }
+
+  openInPreview(): void {
+    const borderoId = this.form.get('_id')?.value;
+    if (!borderoId) {
+      this.alert.showWarning("Salve o borderô antes de visualizar");
+      return;
+    }
+    let endpoint = '/admin/comissoes/preview-bordero/' + borderoId;
+    const url = `${window.location.origin}${endpoint}`;
+    window.open(url, '_blank');
+  }
+
+  async reabrirBordero() {
+    let borderoId = this.form.get('_id')?.value;
+    if (!borderoId) {
+      this.alert.showWarning("Borderô não encontrado");
+      return;
+    }
+
+    if (!confirm("Tem certeza que deseja reabrir este borderô?")) {
+      return;
+    }
+    this.loading = true;
+    try {
+      await this.api.put(`/v1/admin/borderos/${borderoId}/reabrir`, {});
+      this.alert.showSuccess("Borderô reaberto com sucesso!");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      this.loading = false;
+      this.getBorderoById(borderoId);
+    }
+  }
+
+  async deleteBordero() {
+    const borderoId = this.form.get('_id')?.value;
+    if (!borderoId) {
+      this.alert.showWarning("Borderô não encontrado");
+      return;
+    }
+
+    if (!confirm("Tem certeza que deseja apagar este borderô? Todas as cobranças serão desvinculadas.")) {
+      return;
+    }
+
+    this.loading = true;
+    try {
+      await this.api.deleteBordero(borderoId);
+      this.alert.showSuccess("Borderô apagado com sucesso!");
+      window.history.back();
+    } catch (error: any) {
+      this.alert.showDanger(error?.message || "Erro ao apagar o borderô");
+    } finally {
+      this.loading = false;
+    }
+  }
+
 }

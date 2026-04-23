@@ -43,18 +43,28 @@ export class ComissoesAgenciaDetalhesComponent {
   // Seleção múltipla
   selected = new Set<string>();
 
-  // Modal de edição
+  // Modal de edição/criação
   @ViewChild('modalEditarParcela') modalEditarParcelaRef!: TemplateRef<any>;
   @ViewChild('modalCancelarParcela') modalCancelarParcelaRef!: TemplateRef<any>;
+  @ViewChild('modalExcluirParcela') modalExcluirParcelaRef!: TemplateRef<any>;
   private editModalRef: NgbModalRef | null = null;
   private cancelModalRef: NgbModalRef | null = null;
+  private deleteModalRef: NgbModalRef | null = null;
   parcelaEditando: any = null;
   parcelasParaCancelar: any[] = [];
+  parcelasParaExcluir: any[] = [];
   cancelMode: 'single' | 'bulk' = 'single';
+  deleteMode: 'single' | 'bulk' = 'single';
+  loadingDelete: boolean = false;
+  parcelaMode: 'criar' | 'editar' = 'editar';
   editForm: FormGroup = this.fb.group({
+    id_parcela: [''],
     tipo: [''],
     forma_pagamento: [''],
     status: [''],
+    parcela: [null],
+    total_parcelas: [null],
+    label_parcelas: [''],
     valor_parcela: [null],
     data_vencimento: [null],
     data_recebimento: [null],
@@ -64,7 +74,7 @@ export class ComissoesAgenciaDetalhesComponent {
   });
 
   readonly TIPOS = ['ENTRADA', 'ENTRADA RESTANTE', 'SALDO', 'DEVOLUCAO'];
-  readonly FORMAS_PAGAMENTO = ['DINHEIRO', 'PIX', 'MAQUINA_DREAMS'];
+  readonly FORMAS_PAGAMENTO = ['DINHEIRO', 'PIX', 'MAQUINA_DREAMS', "BOLETO_DREAMS"];
   readonly STATUS_OPCOES = ['PENDENTE', 'LIQUIDADO', 'CANCELADO'];
 
   get totalParcelas(): number {
@@ -195,6 +205,7 @@ export class ComissoesAgenciaDetalhesComponent {
   }
 
   abrirModalEditar(parcela: any) {
+    this.parcelaMode = 'editar';
     this.parcelaEditando = parcela;
     const toDateInput = (v: any) => v ? new Date(v).toISOString().substring(0, 10) : null;
     let fp = '';
@@ -207,9 +218,67 @@ export class ComissoesAgenciaDetalhesComponent {
       : valorBruto;
 
     this.editForm.setValue({
+      id_parcela: parcela.id_parcela || '',
       tipo: parcela.tipo || '',
       forma_pagamento: fp,
       status: parcela.status || '',
+      parcela: parcela.parcela || null,
+      total_parcelas: parcela.total_parcelas || null,
+      label_parcelas: parcela.label_parcelas || '',
+      valor_parcela: valorAjustado,
+      data_vencimento: toDateInput(parcela.data_vencimento),
+      data_recebimento: parcela.status === 'LIQUIDADO' ? toDateInput(parcela.data_recebimento) : null,
+    });
+    this.editModalRef = this.modalService.open(this.modalEditarParcelaRef, {
+      centered: true,
+      backdrop: 'static',
+    });
+  }
+
+  abrirModalCriarParcela() {
+    if (this.loadingEdit) return;
+    this.parcelaMode = 'criar';
+    this.parcelaEditando = null;
+    this.editForm.reset({
+      id_parcela: '',
+      tipo: '',
+      forma_pagamento: '',
+      status: '',
+      parcela: null,
+      total_parcelas: null,
+      label_parcelas: '',
+      valor_parcela: null,
+      data_vencimento: null,
+      data_recebimento: null,
+    });
+    this.editModalRef = this.modalService.open(this.modalEditarParcelaRef, {
+      centered: true,
+      backdrop: 'static',
+    });
+  }
+
+  abrirModalDuplicarParcela(parcela: any) {
+    if (this.loadingEdit) return;
+    this.parcelaMode = 'criar';
+    this.parcelaEditando = null;
+    const toDateInput = (v: any) => v ? new Date(v).toISOString().substring(0, 10) : null;
+    let fp = '';
+    if (parcela?.forma_pagamento != 'A DEFINIR') {
+      fp = parcela?.forma_pagamento || '';
+    }
+    const valorBruto = parcela.valor_parcela ?? null;
+    const valorAjustado = parcela.tipo === 'DEVOLUCAO' && valorBruto !== null && valorBruto > 0
+      ? -valorBruto
+      : valorBruto;
+
+    this.editForm.setValue({
+      id_parcela: parcela?.id_parcela ? parcela.id_parcela : "",
+      tipo: parcela.tipo || '',
+      forma_pagamento: fp,
+      status: parcela.status || '',
+      parcela: parcela.parcela || null,
+      total_parcelas: parcela.total_parcelas || null,
+      label_parcelas: parcela.label_parcelas || '',
       valor_parcela: valorAjustado,
       data_vencimento: toDateInput(parcela.data_vencimento),
       data_recebimento: parcela.status === 'LIQUIDADO' ? toDateInput(parcela.data_recebimento) : null,
@@ -221,11 +290,27 @@ export class ComissoesAgenciaDetalhesComponent {
   }
 
   async salvarEdicao() {
-    if (!this.parcelaEditando || this.loadingEdit) return;
+    if (this.loadingEdit) return;
     try {
       this.loadingEdit = true;
-      await this.endpointService.editarParcelaReceita(this.receitaId, this.parcelaEditando._id, this.editForm.value);
-      this.alertService.showSuccess('Parcela atualizada com sucesso.');
+
+      if (this.parcelaMode === 'editar' && !this.parcelaEditando) return;
+
+      if (this.parcelaMode === 'editar') {
+        // Edição de parcela existente
+        await this.endpointService.editarParcelaReceita(
+          this.receitaId,
+          this.parcelaEditando._id,
+          this.editForm.value
+        );
+        this.alertService.showSuccess('Parcela atualizada com sucesso.');
+      } else {
+        // Criação de nova parcela
+        const novaParcelaData = this.editForm.value;
+        await this.endpointService.criarParcelaReceita(this.receitaId, novaParcelaData);
+        this.alertService.showSuccess('Parcela criada com sucesso.');
+      }
+
       this.editModalRef?.close();
       this.editModalRef = null;
       await this.loadData(this.receitaId);
@@ -233,6 +318,53 @@ export class ComissoesAgenciaDetalhesComponent {
       this.alertService.showDanger(error?.message || 'Erro ao salvar parcela.');
     } finally {
       this.loadingEdit = false;
+    }
+  }
+
+  abrirModalExcluirParcela(parcela: any) {
+    if (this.loadingDelete || !parcela) return;
+    this.deleteMode = 'single';
+    this.parcelasParaExcluir = [parcela];
+    this.deleteModalRef = this.modalService.open(this.modalExcluirParcelaRef, {
+      centered: true,
+      size: 'lg',
+      scrollable: true,
+      backdrop: 'static',
+    });
+  }
+
+  abrirModalExcluirSelecionadas() {
+    if (!this.selected.size || this.loadingDelete) return;
+    this.deleteMode = 'bulk';
+    this.parcelasParaExcluir = (this.dados?.parcelas ?? []).filter((p: any) => this.selected.has(p._id));
+    this.deleteModalRef = this.modalService.open(this.modalExcluirParcelaRef, {
+      centered: true,
+      size: 'lg',
+      scrollable: true,
+      backdrop: 'static',
+    });
+  }
+
+  async confirmarExclusao() {
+    if (!this.parcelasParaExcluir.length || this.loadingDelete) return;
+    try {
+      this.loadingDelete = true;
+      if (this.deleteMode === 'single') {
+        const parcela = this.parcelasParaExcluir[0];
+        await this.endpointService.excluirParcelaReceita(this.receitaId, parcela._id);
+        this.alertService.showSuccess('Parcela excluída com sucesso.');
+      } else {
+        const parcelaIds = this.parcelasParaExcluir.map((p: any) => p._id);
+        await this.endpointService.excluirParcelasReceita(this.receitaId, parcelaIds);
+        this.alertService.showSuccess('Parcelas excluídas com sucesso.');
+      }
+      this.deleteModalRef?.close();
+      this.deleteModalRef = null;
+      await this.loadData(this.receitaId);
+    } catch (error: any) {
+      this.alertService.showDanger(error?.message || 'Erro ao excluir parcelas.');
+    } finally {
+      this.loadingDelete = false;
     }
   }
 

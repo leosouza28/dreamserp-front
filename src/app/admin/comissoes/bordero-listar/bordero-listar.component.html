@@ -19,7 +19,11 @@
                                 <tr>
                                     <th>Data</th>
                                     <th>Identificador</th>
-                                    <th class="text-end">Valor&nbsp;Total</th>
+                                    <th class="text-end">Entradas</th>
+                                    <th class="text-end">Restantes</th>
+                                    <th class="text-end">Devolução</th>
+                                    <th class="text-end">Parcelas</th>
+                                    <th class="text-end">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -27,7 +31,11 @@
                                     [routerLink]="['/admin/comissoes/bordero/form', item._id]">
                                     <td>{{item.data_inicial | dateSimple}} - {{item.data_final | dateSimple}}</td>
                                     <td>{{item?.identificador || "Não informado"}}</td>
-                                    <td class="text-end">{{(item?.valor_total || 0 ) | moneyBrl}}</td>
+                                    <td class="text-end">{{(item?.valor_entradas || 0 ) | moneyBrl}}</td>
+                                    <td class="text-end">{{(item?.valor_cliente_devolver_dreams || 0) | moneyBrl}}</td>
+                                    <td class="text-end">{{(item?.valor_dreams_devolver_cliente || 0) | moneyBrl}}</td>
+                                    <td class="text-end">{{(item?.valor_saldos || 0) | moneyBrl}}</td>
+                                    <td class="text-end">{{(item?.valor_final || 0) | moneyBrl}}</td>
                                 </tr>
                             </tbody>
                         </table>

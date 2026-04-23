@@ -94,6 +94,9 @@ export class EndpointsService extends ApiService {
     setBordero(data: any) {
         return this.post('/v1/admin/borderos', data);
     }
+    deleteBordero(id: string) {
+        return this.delete('/v1/admin/borderos/' + id);
+    }
     // Pessoas
     getPessoas({ perpage, page, busca, ...params }: any) {
         let urlParams = new URLSearchParams();
@@ -160,6 +163,15 @@ export class EndpointsService extends ApiService {
     }
     editarParcelaReceita(receita_id: string, parcela_id: string, data: any) {
         return this.put(`/v1/admin/receitas/parcelas-comissoes/${receita_id}/editar-parcela/${parcela_id}`, data);
+    }
+    criarParcelaReceita(receita_id: string, data: any) {
+        return this.post(`/v1/admin/receitas/parcelas-comissoes/${receita_id}/criar-parcela`, data);
+    }
+    excluirParcelaReceita(receita_id: string, parcela_id: string) {
+        return this.delete(`/v1/admin/receitas/parcelas-comissoes/${receita_id}/excluir-parcela/${parcela_id}`);
+    }
+    excluirParcelasReceita(receita_id: string, parcela_ids: string[]) {
+        return this.delete(`/v1/admin/receitas/parcelas-comissoes/${receita_id}/excluir-parcelas`, { parcela_ids });
     }
     getPainelParcelasComissoes(params: any = {}) {
         return this.get('/v1/admin/receitas/parcelas-comissoes-painel');

@@ -1,0 +1,68 @@
+<div class="drp-wrapper">
+    <!-- Label -->
+    <label class="form-label small fw-semibold text-uppercase" *ngIf="label">{{ label }}</label>
+
+    <!-- Trigger input -->
+    <div class="drp-trigger" (click)="toggle()" [class.drp-trigger--active]="isOpen">
+        <i class="bi bi-calendar3 drp-icon"></i>
+        <span class="drp-display" [class.drp-display--placeholder]="!start">
+            {{ displayValue || placeholder }}
+        </span>
+        <button *ngIf="start" class="drp-clear" type="button" (click)="clear($event)" title="Limpar">
+            <i class="bi bi-x"></i>
+        </button>
+    </div>
+
+    <!-- Dropdown calendar -->
+    <div class="drp-dropdown" *ngIf="isOpen">
+        <!-- Header: month navigation -->
+        <div class="drp-header">
+            <button type="button" class="drp-nav-btn" (click)="prevMonth()">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="drp-month-label text-capitalize">{{ monthLabel }}</span>
+            <button type="button" class="drp-nav-btn" (click)="nextMonth()">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Hint -->
+        <div class="drp-hint">
+            <small class="text-muted">
+                <ng-container *ngIf="!start || (start && end)">Clique para selecionar o início</ng-container>
+                <ng-container *ngIf="start && !end">Clique para selecionar o fim</ng-container>
+            </small>
+        </div>
+
+        <!-- Week days -->
+        <div class="drp-grid">
+            <div class="drp-weekday" *ngFor="let wd of weekDays">{{ wd }}</div>
+
+            <!-- Days -->
+            <ng-container *ngFor="let week of weeks">
+                <div
+                    *ngFor="let day of week"
+                    class="drp-day"
+                    [class.drp-day--empty]="!day"
+                    [class.drp-day--today]="day && isToday(day)"
+                    [class.drp-day--start]="day && isStart(day)"
+                    [class.drp-day--end]="day && isEnd(day)"
+                    [class.drp-day--in-range]="day && isInRange(day)"
+                    [class.drp-day--single]="day && isStart(day) && !end && !hoverDate"
+                    (click)="day && selectDate(day)"
+                    (mouseenter)="onDayHover(day)"
+                    (mouseleave)="onDayHover(null)"
+                >
+                    <span *ngIf="day">{{ day.date() }}</span>
+                </div>
+            </ng-container>
+        </div>
+
+        <!-- Footer -->
+        <div class="drp-footer" *ngIf="start && end">
+            <small class="text-muted">
+                {{ start | date: 'dd/MM/yyyy' }} → {{ end | date: 'dd/MM/yyyy' }}
+            </small>
+        </div>
+    </div>
+</div>

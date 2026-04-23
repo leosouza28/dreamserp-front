@@ -22,6 +22,7 @@ import { BorderoFormComponent } from "./admin/comissoes/bordero-form/bordero-for
 
 import { ListarCrmComponent } from './admin/crm/listar-crm/listar-crm.component';
 import { FormCrmComponent } from './admin/crm/form-crm/form-crm.component';
+import { PreviewBorderoComponent } from "./admin/comissoes/preview-bordero/preview-bordero.component";
 
 const routes: Routes = [
   {
@@ -116,6 +117,10 @@ const routes: Routes = [
           {
             path: "bordero/form/:id",
             component: BorderoFormComponent
+          },
+          {
+            path: "preview-bordero/:id",
+            component: PreviewBorderoComponent
           },
         ]
       },

@@ -11,67 +11,80 @@
             <div class="card border-0 shadow-sm bg-white">
                 <div class="card-body">
                     <form [formGroup]="form" (ngSubmit)="getData()" class="mb-3">
-                        <div class="row g-2 align-items-end">
+                <div class="row g-2 align-items-end mb-3">
 
-                            <!-- Tipo de Data -->
-                            <div class="col-12 col-md-2">
-                                <label class="form-label small fw-semibold text-uppercase">Buscar por Data</label>
-                                <select class="form-select form-select-sm" formControlName="tipo_data">
-                                    <option value="emissao">Emissão</option>
-                                    <option value="vencimento">Vencimento</option>
-                                    <option value="recebimento">Recebimento</option>
-                                </select>
-                            </div>
-                            <!-- Data Inicial -->
-                            <div class="col-6 col-md-2">
-                                <label class="form-label small fw-semibold text-uppercase">Data Inicial</label>
-                                <input type="date" class="form-control form-control-sm" formControlName="data_inicial">
-                            </div>
-                            <!-- Data Final -->
-                            <div class="col-6 col-md-2">
-                                <label class="form-label small fw-semibold text-uppercase">Data Final</label>
-                                <input type="date" class="form-control form-control-sm" formControlName="data_final">
-                            </div>
+                    <!-- Data de Emissão -->
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <date-range-picker
+                            label="Data de Emissão"
+                            [start]="form.get('data_emissao_inicial')?.value"
+                            [end]="form.get('data_emissao_final')?.value"
+                            (startChange)="form.get('data_emissao_inicial')?.setValue($event)"
+                            (endChange)="form.get('data_emissao_final')?.setValue($event)">
+                        </date-range-picker>
+                    </div>
 
-                            <!-- Botões -->
-                            <div class="col-12 col-md-2 d-flex gap-1">
-                                <button type="submit" class="btn btn-primary btn-sm w-100" [disabled]="loading">
-                                    <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
-                                    <span *ngIf="!loading"><i class="bi bi-search me-1"></i>Buscar</span>
-                                </button>
-                            </div>
+                    <!-- Data de Vencimento -->
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <date-range-picker
+                            label="Data de Vencimento"
+                            [start]="form.get('data_vencimento_inicial')?.value"
+                            [end]="form.get('data_vencimento_final')?.value"
+                            (startChange)="form.get('data_vencimento_inicial')?.setValue($event)"
+                            (endChange)="form.get('data_vencimento_final')?.setValue($event)">
+                        </date-range-picker>
+                    </div>
 
+                    <!-- Data de Liquidação -->
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <date-range-picker
+                            label="Data de Liquidação"
+                            [start]="form.get('data_liquidacao_inicial')?.value"
+                            [end]="form.get('data_liquidacao_final')?.value"
+                            (startChange)="form.get('data_liquidacao_inicial')?.setValue($event)"
+                            (endChange)="form.get('data_liquidacao_final')?.setValue($event)">
+                        </date-range-picker>
+                    </div>
+
+                    <!-- Botão Buscar -->
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <button type="submit" class="btn btn-primary btn-sm w-100" [disabled]="loading">
+                            <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+                            <span *ngIf="!loading"><i class="bi bi-search me-1"></i>Buscar</span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Tipo de Parcela -->
+                <div class="row">
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-uppercase me-3">Tipo de Parcela</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="tipoEntrada"
+                                formControlName="tipo_entrada">
+                            <label class="form-check-label small" for="tipoEntrada">Entrada</label>
                         </div>
-
-                        <!-- Tipo de Parcela -->
-                        <div class="row mt-2">
-                            <div class="col-12">
-                                <label class="form-label small fw-semibold text-uppercase me-3">Tipo de Parcela</label>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="tipoEntrada"
-                                        formControlName="tipo_entrada">
-                                    <label class="form-check-label small" for="tipoEntrada">Entrada</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="tipoEntradaRestante"
-                                        formControlName="tipo_entrada_restante">
-                                    <label class="form-check-label small" for="tipoEntradaRestante">Entrada
-                                        Restante</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="tipoSaldo"
-                                        formControlName="tipo_saldo">
-                                    <label class="form-check-label small" for="tipoSaldo">Saldo</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="tipoDevolucao"
-                                        formControlName="tipo_devolucao">
-                                    <label class="form-check-label small" for="tipoDevolucao">Devolução</label>
-                                </div>
-                            </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="tipoEntradaRestante"
+                                formControlName="tipo_entrada_restante">
+                            <label class="form-check-label small" for="tipoEntradaRestante">Entrada
+                                Restante</label>
                         </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="tipoSaldo"
+                                formControlName="tipo_saldo">
+                            <label class="form-check-label small" for="tipoSaldo">Saldo</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="tipoDevolucao"
+                                formControlName="tipo_devolucao">
+                            <label class="form-check-label small" for="tipoDevolucao">Devolução</label>
+                        </div>
+                    </div>
+                </div>
 
-                    </form>
+            </form>
 
                     <div class="row row-gap-3">
                         <div class="col-12">
@@ -165,6 +178,27 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <!-- Filtro Status da Parcela -->
+                                    <div class="col-12 col-md-2" formGroupName="status_parcela">
+                                        <label class="form-label small fw-semibold text-uppercase">Parcela</label>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="statusLiquidado"
+                                                    formControlName="liquidado">
+                                                <label class="form-check-label small" for="statusLiquidado">Liquidado</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="statusPendente"
+                                                    formControlName="pendente">
+                                                <label class="form-check-label small" for="statusPendente">Pendente</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="statusCancelado"
+                                                    formControlName="cancelado">
+                                                <label class="form-check-label small" for="statusCancelado">Cancelado</label>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <!-- Filtro Porcentagem Paga Até -->
                                     <div class="col-12 col-md-2">
                                         <label class="form-label small fw-semibold text-uppercase">% Paga Até</label>
@@ -220,12 +254,14 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr *ngFor="let item of dataFilterada.lista" class="">
+                                        <tr *ngFor="let item of dataFilterada.lista; let i =index" class="">
                                             <td class="text-uppercase">
-                                                <span class="cursor-pointer"
-                                                    [routerLink]="['/admin/comissoes/agencia/detalhes', item._id]">
+                                                <a class="cursor-pointer"
+                                                    [routerLink]="['/admin/comissoes/agencia/detalhes', item._id]"
+                                                    target="_blank"
+                                                    >
                                                     {{item.cliente.nome}}
-                                                </span>
+                                                </a>
                                                 <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.valedasminas_cancelado"
                                                     ngbTooltip="Qtd de dias entre Venda e Solicitação de cancelamento">
                                                     <i class="bi bi-ban me-1"></i>
@@ -247,6 +283,12 @@
                                                     [ngbTooltip]="item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$ = Parque recebeu a parcela neste mês' : 'X = Parque não recebeu a parcela neste mês'">
                                                     {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$' : 'X'}}
                                                 </span>
+
+                                                <span class="badge bg-warning" 
+                                                    *ngIf="item?.valedasminas_renegociado">
+                                                    <i class="bi bi-arrow-repeat me-1"></i> Reneg.
+                                                </span>
+                                                
                                             </td>
                                             <td class="text-end">
                                                 <span
@@ -265,7 +307,10 @@
                                             <td class="text-end">{{item.data | dateSimple}}</td>
                                             <td class="text-end">{{item.parcelas.data_vencimento | dateSimple}}</td>
                                             <td class="text-end">{{item.parcelas.valor_parcela | moneyBrl}}</td>
-                                            <td class="text-end">{{item.parcelas.data_recebimento | dateSimple}}</td>
+                                            <td class="text-end">
+                                                <a *ngIf="item?.parcelas?.bordero?._id" [routerLink]="['/admin/comissoes/preview-bordero', item.parcelas.bordero._id]" target="_blank" >(B)</a>
+                                                {{item.parcelas.data_recebimento | dateSimple}}
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>

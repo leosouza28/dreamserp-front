@@ -54,9 +54,14 @@ export class ApiService {
     }
 
     // DELETE request
-    async delete<T>(endpoint: string, params?: HttpParams, headers?: HttpHeaders): Promise<any> {
+    async delete<T>(endpoint: string, paramsOrBody?: HttpParams | any, headers?: HttpHeaders): Promise<any> {
+        const isHttpParams = paramsOrBody instanceof HttpParams;
         return lastValueFrom(
-            this.http.delete<T>(`${this.baseUrl}${endpoint}`, { params, headers: this.getHeaders(headers) }).pipe(
+            this.http.delete<T>(`${this.baseUrl}${endpoint}`, {
+                params: isHttpParams ? paramsOrBody : undefined,
+                body: !isHttpParams ? paramsOrBody : undefined,
+                headers: this.getHeaders(headers)
+            }).pipe(
                 catchError(this.handleError)
             )
         );

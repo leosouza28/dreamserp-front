@@ -58,8 +58,8 @@ export class ComissoesAgenciaComponent implements OnInit {
   get resumoTipos(): ResumoTipoCard[] {
     // Se há filtros locais aplicados, recalcula o resumo da lista filtrada
     const localFiltersValue = this.localFiltersForm.getRawValue();
-    const temFiltros = 
-      localFiltersValue.status?.recebeu || 
+    const temFiltros =
+      localFiltersValue.status?.recebeu ||
       localFiltersValue.status?.nao_recebeu ||
       Object.values(localFiltersValue.scores || {}).some((v: any) => v) ||
       localFiltersValue.valedasminas_porcentagem_paga_ate ||
@@ -163,13 +163,16 @@ export class ComissoesAgenciaComponent implements OnInit {
 
   constructor() {
     this.form = this.fb.group({
-      tipo_data: ['vencimento'],
       tipo_entrada: [false],
       tipo_entrada_restante: [false],
       tipo_saldo: [false],
       tipo_devolucao: [false],
-      data_inicial: [null],
-      data_final: [null]
+      data_emissao_inicial: ["2025-10-01"],
+      data_emissao_final: ["2025-10-31"],
+      data_vencimento_inicial: [null],
+      data_vencimento_final: [null],
+      data_liquidacao_inicial: [null],
+      data_liquidacao_final: [null]
     });
 
     this.addComissaoForm = this.fb.group({
@@ -181,6 +184,11 @@ export class ComissoesAgenciaComponent implements OnInit {
       status: this.fb.group({
         recebeu: [false],
         nao_recebeu: [false]
+      }),
+      status_parcela: this.fb.group({
+        liquidado: [false],
+        pendente: [false],
+        cancelado: [false]
       }),
       scores: this.fb.group({
         a: [false],
@@ -200,13 +208,16 @@ export class ComissoesAgenciaComponent implements OnInit {
     this.route.queryParams.subscribe(qp => {
       const tipos = (qp['tipo'] || '').split(',').filter(Boolean);
       this.form.patchValue({
-        tipo_data: qp['tipo_data'] || 'vencimento',
         tipo_entrada: tipos.includes('ENTRADA'),
         tipo_entrada_restante: tipos.includes('ENTRADA RESTANTE'),
         tipo_saldo: tipos.includes('SALDO'),
         tipo_devolucao: tipos.includes('DEVOLUCAO'),
-        data_inicial: qp['data_inicial'] || '2025-10-01',
-        data_final: qp['data_final'] || '2025-10-31'
+        data_emissao_inicial: qp['data_emissao_inicial'] || "2025-10-01",
+        data_emissao_final: qp['data_emissao_final'] || "2025-10-31",
+        data_vencimento_inicial: qp['data_vencimento_inicial'] || null,
+        data_vencimento_final: qp['data_vencimento_final'] || null,
+        data_liquidacao_inicial: qp['data_liquidacao_inicial'] || null,
+        data_liquidacao_final: qp['data_liquidacao_final'] || null
       });
       this.getData();
     });
@@ -214,6 +225,9 @@ export class ComissoesAgenciaComponent implements OnInit {
     // Listeners para filtros locais
     this.localFiltersForm.get('status.recebeu')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
     this.localFiltersForm.get('status.nao_recebeu')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
+    this.localFiltersForm.get('status_parcela.liquidado')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
+    this.localFiltersForm.get('status_parcela.pendente')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
+    this.localFiltersForm.get('status_parcela.cancelado')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
     this.localFiltersForm.get('scores.a')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
     this.localFiltersForm.get('scores.b')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
     this.localFiltersForm.get('scores.c')?.valueChanges.subscribe(() => this.aplicarFiltrosLocais());
@@ -228,18 +242,34 @@ export class ComissoesAgenciaComponent implements OnInit {
     if (this.loading) return;
     try {
       this.loading = true;
-      console.log(this.form.value);
-      const { tipo_data, tipo_entrada, tipo_entrada_restante, tipo_saldo, tipo_devolucao, data_inicial, data_final } = this.form.value;
+      const {
+        tipo_entrada,
+        tipo_entrada_restante,
+        tipo_saldo,
+        tipo_devolucao,
+        data_emissao_inicial,
+        data_emissao_final,
+        data_vencimento_inicial,
+        data_vencimento_final,
+        data_liquidacao_inicial,
+        data_liquidacao_final
+      } = this.form.value;
+
       const params: any = {};
-      if (tipo_data) params['tipo_data'] = tipo_data;
+
       const tipos: string[] = [];
       if (tipo_entrada) tipos.push('ENTRADA');
       if (tipo_entrada_restante) tipos.push('ENTRADA RESTANTE');
       if (tipo_saldo) tipos.push('SALDO');
       if (tipo_devolucao) tipos.push('DEVOLUCAO');
       if (tipos.length > 0) params['tipo'] = tipos.join(',');
-      if (data_inicial) params['data_inicial'] = data_inicial;
-      if (data_final) params['data_final'] = data_final;
+
+      if (data_emissao_inicial) params['data_emissao_inicial'] = data_emissao_inicial;
+      if (data_emissao_final) params['data_emissao_final'] = data_emissao_final;
+      if (data_vencimento_inicial) params['data_vencimento_inicial'] = data_vencimento_inicial;
+      if (data_vencimento_final) params['data_vencimento_final'] = data_vencimento_final;
+      if (data_liquidacao_inicial) params['data_liquidacao_inicial'] = data_liquidacao_inicial;
+      if (data_liquidacao_final) params['data_liquidacao_final'] = data_liquidacao_final;
 
       // Persiste os filtros na URL
       this.router.navigate([], {
@@ -269,7 +299,7 @@ export class ComissoesAgenciaComponent implements OnInit {
     }
 
     const formValue = this.localFiltersForm.getRawValue();
-    const { status, scores, valedasminas_porcentagem_paga_ate, valedasminas_porcentagem_paga_mais, busca_geral } = formValue;
+    const { status, status_parcela, scores, valedasminas_porcentagem_paga_ate, valedasminas_porcentagem_paga_mais, busca_geral } = formValue;
 
     // Map de scores selecionados
     const scoresMap: { [key: string]: string } = {
@@ -294,7 +324,20 @@ export class ComissoesAgenciaComponent implements OnInit {
         }
       }
 
-      // Filtro 2: cliente.score (múltiplos scores podem ser selecionados)
+      // Filtro 2: status da parcela (LIQUIDADO, PENDENTE, CANCELADO)
+      const statusParcelaSelecionados: string[] = [];
+      if (status_parcela.liquidado) statusParcelaSelecionados.push('LIQUIDADO');
+      if (status_parcela.pendente) statusParcelaSelecionados.push('PENDENTE');
+      if (status_parcela.cancelado) statusParcelaSelecionados.push('CANCELADO');
+
+      if (statusParcelaSelecionados.length > 0) {
+        const itemStatus = (item.parcelas?.status || '').toUpperCase();
+        if (!statusParcelaSelecionados.includes(itemStatus)) {
+          return false;
+        }
+      }
+
+      // Filtro 3: cliente.score (múltiplos scores podem ser selecionados)
       if (scoresSelecionados.length > 0) {
         if (!scoresSelecionados.includes(item.cliente?.score)) {
           return false;
@@ -335,6 +378,12 @@ export class ComissoesAgenciaComponent implements OnInit {
       lista: listaFilterada,
       total: listaFilterada.length
     };
+
+    this.dataFilterada.lista.sort((a: any, b: any) => {
+      const nomeA = a.cliente?.nome?.toLowerCase() || '';
+      const nomeB = b.cliente?.nome?.toLowerCase() || '';
+      return nomeA.localeCompare(nomeB);
+    });
   }
 
   get scoresDisponiveis(): string[] {
@@ -363,30 +412,38 @@ export class ComissoesAgenciaComponent implements OnInit {
 
     const headers = [
       'Cliente',
-      'Documento',
-      'Nº Título',
-      'Tipo',
-      'Valor',
-      'Status',
-      'Data Emissão',
-      'Data Vencimento',
-      'Data Recebimento',
-      'Score',
-      '% Paga'
+      'ValorParcela',
+      // 'ValoVenda',
+      // 'Tipo',
+      // 'Valor',
+      // 'Status',
+      // 'Data Emissão',
+      // 'Data Vencimento',
+      // 'Data Recebimento',
+      // 'Score',
+      // '% Paga'
     ];
+
+    // Ordenar datafilterada por "cliente.nome" em ordem alfabética antes de gerar os dados
+    // this.dataFilterada.lista.sort((a: any, b: any) => {
+    //   const nomeA = a.cliente?.nome?.toLowerCase() || '';
+    //   const nomeB = b.cliente?.nome?.toLowerCase() || '';
+    //   return nomeA.localeCompare(nomeB);
+    // });
+
 
     const dados = this.dataFilterada.lista.map((item: any) => [
       item.cliente?.nome || '',
-      item.cliente?.documento || '',
-      item.numero_titulo || '',
-      item.parcelas?.tipo || '',
-      item.parcelas?.valor_parcela || '',
-      item.parcelas?.status || '',
-      item.data ? new Date(item.data).toLocaleDateString('pt-BR') : '',
-      item.parcelas?.data_vencimento ? new Date(item.parcelas.data_vencimento).toLocaleDateString('pt-BR') : '',
-      item.parcelas?.data_recebimento ? new Date(item.parcelas.data_recebimento).toLocaleDateString('pt-BR') : '',
-      item.cliente?.score || '',
-      (item.valedasminas_porcentagem_paga || 0).toFixed(2) + '%'
+      item?.parcelas?.valor_parcela?.toFixed(2).split(".").join(',') || '',
+      // item?.produto_detalhes?.find((d: any) => d.key === 'valor_venda')?.value || '',
+      // item.parcelas?.tipo || '',
+      // item.parcelas?.valor_parcela || '',
+      // item.parcelas?.status || '',
+      // item.data ? new Date(item.data).toLocaleDateString('pt-BR') : '',
+      // item.parcelas?.data_vencimento ? new Date(item.parcelas.data_vencimento).toLocaleDateString('pt-BR') : '',
+      // item.parcelas?.data_recebimento ? new Date(item.parcelas.data_recebimento).toLocaleDateString('pt-BR') : '',
+      // item.cliente?.score || '',
+      // (item.valedasminas_porcentagem_paga || 0).toFixed(2) + '%'
     ]);
 
     this.gerarCSV(headers, dados, 'comissoes-agencia.csv');

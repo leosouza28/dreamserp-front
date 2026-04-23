@@ -6,20 +6,17 @@
         </div>
         <div class="card-body" [formGroup]="form">
             <div class="row">
-                <div class="col-md-3 mb-3">
-                    <label for="data_inicial" class="form-label">Data Inicial</label>
-                    <input type="date" id="data_inicial" class="form-control" formControlName="data_inicial">
-                    <div *ngIf="form.get('data_inicial')?.invalid && form.get('data_inicial')?.touched"
-                        class="text-danger">
-                        Campo obrigatório.
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label for="data_final" class="form-label">Data Final</label>
-                    <input type="date" id="data_final" class="form-control" formControlName="data_final">
-                    <!-- Obrigatorio -->
-                    <div *ngIf="form.get('data_final')?.invalid && form.get('data_final')?.touched" class="text-danger">
-                        Campo obrigatório.
+                <div class="col-md-6 mb-3">
+                    <date-range-picker
+                        label="Período do Borderô"
+                        [start]="form.get('data_inicial')?.value"
+                        [end]="form.get('data_final')?.value"
+                        (startChange)="form.get('data_inicial')?.setValue($event)"
+                        (endChange)="form.get('data_final')?.setValue($event)">
+                    </date-range-picker>
+                    <div *ngIf="(form.get('data_inicial')?.invalid || form.get('data_final')?.invalid) && form.get('data_inicial')?.touched"
+                        class="text-danger small">
+                        Informe o período inicial e final.
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
@@ -41,11 +38,30 @@
                         <option *ngFor="let forma of formas_pagamento" [value]="forma">{{forma}}</option>
                     </select>
                 </div>
+                <div class="col-md-3 mb-3">
+                    <label for="data_pagamento" class="form-label">Data de Pagamento</label>
+                    <input type="date" id="data_pagamento" class="form-control" formControlName="data_pagamento">
+                </div>
             </div>
             <div class="d-flex flex-row">
                 <button class="btn btn-primary" type="submit" (click)="submit()" [disabled]="loading">
                     <text-spinner [loading]="loading">
                         Salvar
+                    </text-spinner>
+                </button>
+                <button class="btn btn-success ms-2" type="button" (click)="openInPreview()" [disabled]="loading">
+                    <text-spinner [loading]="loading">
+                        Visualizar Borderô
+                    </text-spinner>
+                </button>
+                <button class="btn btn-danger ms-2" type="button" [disabled]="!isBorderoFechado || loading" (click)="reabrirBordero()">
+                    <text-spinner [loading]="loading">
+                        Reabrir Borderô
+                    </text-spinner>
+                </button>
+                <button class="btn btn-outline-danger ms-2" type="button" [disabled]="isBorderoFechado || !form.get('_id')?.value || loading" (click)="deleteBordero()">
+                    <text-spinner [loading]="loading">
+                        Apagar Borderô
                     </text-spinner>
                 </button>
             </div>
@@ -122,58 +138,147 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of parcelasAdicionadas" class="table-success">
-                            <td>
-                                <button type="button" class="btn btn-sm btn-danger" (click)="removerParcela(item._id)"
-                                    title="Remover parcela">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                            <td class="text-uppercase">
-                                <a [routerLink]="['/admin/comissoes/agencia/detalhes', item._id]" target="_blank" >
-                                    {{item.cliente?.nome}} 
-                                </a>
-                                <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.valedasminas_cancelado"
-                                    ngbTooltip="Qtd de dias entre Venda e Solicitação de cancelamento">
-                                    <i class="bi bi-ban me-1"></i>
-                                    {{item?.valedasminas_diff_dias_cancelamento}} dias
-                                </span>
-                                <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.pendencia?.tipo == 'DEBITO'"
-                                    ngbTooltip="Contratante precisa pagar">
-                                    <i class="bi bi-exclamation-triangle me-1"></i>
-                                    {{item?.pendencia.tipo}}
-                                </span>
-                                <span class="badge bg-secondary me-1 cursor-help"
-                                    *ngIf="item?.pendencia?.tipo == 'CREDITO'" ngbTooltip="Agência precisa pagar">
-                                    <i class="bi bi-arrow-up me-1"></i> {{item?.pendencia.tipo}}
-                                </span>
-                                <span
-                                    class="badge {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? 'bg-success' : 'bg-danger'}} me-1 cursor-help"
-                                    *ngIf="item?.parcelas?.tipo == 'SALDO'"
-                                    [ngbTooltip]="item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$ = Parque recebeu a parcela neste mês' : 'X = Parque não recebeu a parcela neste mês'">
-                                    {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$' : 'X'}}
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <span
-                                    class="badge {{item?.valedasminas_porcentagem_mais_30 ? 'bg-success' : 'bg-warning'}} me-1 cursor-help"
-                                    ngbTooltip="Porcentagem recebida pelo parque">
-                                    {{(item?.valedasminas_porcentagem_paga || 0)?.toFixed(2)}}%
-                                </span>
-                            </td>
-                            <td class="text-center">{{item.cliente?.score ? '(' + item.cliente?.score + ')' : ''}}</td>
-                            <td>{{item.parcelas?.tipo}}</td>
-                            <td class="text-center">{{item.parcelas?.label_parcelas}}</td>
-                            <td class="text-center">
-                                <render-badge [badgeText]="item.parcelas?.status"></render-badge>
-                            </td>
-                            <td class="text-end">{{item.data | dateSimple}}</td>
-                            <td class="text-end">{{item.parcelas?.data_vencimento | dateSimple}}</td>
-                            <td class="text-end">{{item.parcelas?.valor_parcela | moneyBrl}}</td>
-                            <td class="text-end">{{item.parcelas?.data_recebimento | dateSimple}}</td>
-                        </tr>
+                        <ng-container *ngFor="let grupo of gruposParcelasAdicionadasPrincipais">
+                            <tr class="table-light">
+                                <td colspan="11" class="small fw-semibold text-uppercase">
+                                    {{ grupo.tipo }}
+                                    <span class="badge bg-secondary ms-1">{{ grupo.itens.length }}</span>
+                                    <span class="float-end">Subtotal: {{ grupo.subtotal | moneyBrl }}</span>
+                                </td>
+                            </tr>
+                            <tr *ngFor="let item of grupo.itens" class="table-success">
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger" (click)="removerParcela(item.parcelas._id)"
+                                        title="Remover parcela" *ngIf="!isBorderoFechado">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                                <td class="text-uppercase">
+                                    <a [routerLink]="['/admin/comissoes/agencia/detalhes', item._id]" target="_blank" >
+                                        {{item.cliente?.nome}} 
+                                    </a>
+                                    <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.valedasminas_cancelado"
+                                        ngbTooltip="Qtd de dias entre Venda e Solicitação de cancelamento">
+                                        <i class="bi bi-ban me-1"></i>
+                                        {{item?.valedasminas_diff_dias_cancelamento}} dias
+                                    </span>
+                                    <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.pendencia?.tipo == 'DEBITO'"
+                                        ngbTooltip="Contratante precisa pagar">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        {{item?.pendencia.tipo}}
+                                    </span>
+                                    <span class="badge bg-secondary me-1 cursor-help"
+                                        *ngIf="item?.pendencia?.tipo == 'CREDITO'" ngbTooltip="Agência precisa pagar">
+                                        <i class="bi bi-arrow-up me-1"></i> {{item?.pendencia.tipo}}
+                                    </span>
+                                    <span
+                                        class="badge {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? 'bg-success' : 'bg-danger'}} me-1 cursor-help"
+                                        *ngIf="item?.parcelas?.tipo == 'SALDO'"
+                                        [ngbTooltip]="item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$ = Parque recebeu a parcela neste mês' : 'X = Parque não recebeu a parcela neste mês'">
+                                        {{item?.parcelas?.valedasminas_recebeu_mes_referencia ? '$' : 'X'}}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <span
+                                        class="badge {{item?.valedasminas_porcentagem_mais_30 ? 'bg-success' : 'bg-warning'}} me-1 cursor-help"
+                                        ngbTooltip="Porcentagem recebida pelo parque">
+                                        {{(item?.valedasminas_porcentagem_paga || 0)?.toFixed(2)}}%
+                                    </span>
+                                </td>
+                                <td class="text-center">{{item.cliente?.score ? '(' + item.cliente?.score + ')' : ''}}</td>
+                                <td>{{item.parcelas?.tipo}}</td>
+                                <td class="text-center">{{item.parcelas?.label_parcelas}}</td>
+                                <td class="text-center">
+                                    <render-badge [badgeText]="item.parcelas?.status"></render-badge>
+                                </td>
+                                <td class="text-end">{{item.data | dateSimple}}</td>
+                                <td class="text-end">{{item.parcelas?.data_vencimento | dateSimple}}</td>
+                                <td class="text-end">{{item.parcelas?.valor_parcela | moneyBrl}}</td>
+                                <td class="text-end">{{item.parcelas?.data_recebimento | dateSimple}}</td>
+                            </tr>
+                        </ng-container>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Accordion: Entradas -->
+            <div class="mt-3" *ngIf="grupoParcelasEntrada">
+                <div class="border rounded">
+                    <div class="d-flex align-items-center justify-content-between px-3 py-2 bg-light"
+                        style="cursor:pointer;" (click)="entradaAccordionAberto = !entradaAccordionAberto">
+                        <span class="fw-semibold small text-uppercase">
+                            <i class="bi bi-chevron-{{ entradaAccordionAberto ? 'up' : 'down' }} me-2"></i>
+                            Entradas
+                            <span class="badge bg-secondary ms-1">{{ grupoParcelasEntrada.itens.length }}</span>
+                        </span>
+                        <span class="small text-muted">Subtotal: {{ grupoParcelasEntrada.subtotal | moneyBrl }}</span>
+                    </div>
+                    <div *ngIf="entradaAccordionAberto" class="table-responsive">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead>
+                                <tr class="text-uppercase">
+                                    <th style="width: 50px;">Ação</th>
+                                    <th>Devedor</th>
+                                    <th></th>
+                                    <th></th>
+                                    <th>Tipo</th>
+                                    <th class="text-center">Parcela</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-end">Emissão</th>
+                                    <th class="text-end">Vencimento</th>
+                                    <th class="text-end">Valor</th>
+                                    <th class="text-end">Liquidação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of grupoParcelasEntrada.itens" class="table-success">
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                            (click)="removerParcela(item.parcelas._id)"
+                                            title="Remover parcela" *ngIf="!isBorderoFechado">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                    <td class="text-uppercase">
+                                        <a [routerLink]="['/admin/comissoes/agencia/detalhes', item._id]" target="_blank">
+                                            {{item.cliente?.nome}}
+                                        </a>
+                                        <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.valedasminas_cancelado"
+                                            ngbTooltip="Qtd de dias entre Venda e Solicitação de cancelamento">
+                                            <i class="bi bi-ban me-1"></i>
+                                            {{item?.valedasminas_diff_dias_cancelamento}} dias
+                                        </span>
+                                        <span class="badge bg-danger me-1 cursor-help" *ngIf="item?.pendencia?.tipo == 'DEBITO'"
+                                            ngbTooltip="Contratante precisa pagar">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            {{item?.pendencia.tipo}}
+                                        </span>
+                                        <span class="badge bg-secondary me-1 cursor-help"
+                                            *ngIf="item?.pendencia?.tipo == 'CREDITO'" ngbTooltip="Agência precisa pagar">
+                                            <i class="bi bi-arrow-up me-1"></i> {{item?.pendencia.tipo}}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge {{item?.valedasminas_porcentagem_mais_30 ? 'bg-success' : 'bg-warning'}} me-1 cursor-help"
+                                            ngbTooltip="Porcentagem recebida pelo parque">
+                                            {{(item?.valedasminas_porcentagem_paga || 0)?.toFixed(2)}}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{item.cliente?.score ? '(' + item.cliente?.score + ')' : ''}}</td>
+                                    <td>{{item.parcelas?.tipo}}</td>
+                                    <td class="text-center">{{item.parcelas?.label_parcelas}}</td>
+                                    <td class="text-center">
+                                        <render-badge [badgeText]="item.parcelas?.status"></render-badge>
+                                    </td>
+                                    <td class="text-end">{{item.data | dateSimple}}</td>
+                                    <td class="text-end">{{item.parcelas?.data_vencimento | dateSimple}}</td>
+                                    <td class="text-end">{{item.parcelas?.valor_parcela | moneyBrl}}</td>
+                                    <td class="text-end">{{item.parcelas?.data_recebimento | dateSimple}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -186,26 +291,28 @@
             <!-- Formulário de Busca -->
             <form [formGroup]="searchForm" (ngSubmit)="buscarParcelas()" class="mb-4">
                 <div class="row g-2 align-items-end mb-3">
-                    <!-- Tipo de Data -->
-                    <div class="col-12 col-md-2">
-                        <label class="form-label small fw-semibold text-uppercase">Buscar por Data</label>
-                        <select class="form-select form-select-sm" formControlName="tipo_data">
-                            <option value="emissao">Emissão</option>
-                            <option value="vencimento">Vencimento</option>
-                        </select>
+                    <!-- Data de Emissão -->
+                    <div class="col-12 col-md-4">
+                        <date-range-picker
+                            label="Data de Emissão"
+                            [start]="searchForm.get('data_emissao_inicial')?.value"
+                            [end]="searchForm.get('data_emissao_final')?.value"
+                            (startChange)="searchForm.get('data_emissao_inicial')?.setValue($event)"
+                            (endChange)="searchForm.get('data_emissao_final')?.setValue($event)">
+                        </date-range-picker>
                     </div>
-                    <!-- Data Inicial -->
-                    <div class="col-6 col-md-2">
-                        <label class="form-label small fw-semibold text-uppercase">Data Inicial</label>
-                        <input type="date" class="form-control form-control-sm" formControlName="data_inicial">
-                    </div>
-                    <!-- Data Final -->
-                    <div class="col-6 col-md-2">
-                        <label class="form-label small fw-semibold text-uppercase">Data Final</label>
-                        <input type="date" class="form-control form-control-sm" formControlName="data_final">
+                    <!-- Data de Vencimento -->
+                    <div class="col-12 col-md-4">
+                        <date-range-picker
+                            label="Data de Vencimento"
+                            [start]="searchForm.get('data_vencimento_inicial')?.value"
+                            [end]="searchForm.get('data_vencimento_final')?.value"
+                            (startChange)="searchForm.get('data_vencimento_inicial')?.setValue($event)"
+                            (endChange)="searchForm.get('data_vencimento_final')?.setValue($event)">
+                        </date-range-picker>
                     </div>
                     <!-- Botão Buscar -->
-                    <div class="col-12 col-md-2">
+                    <div class="col-12 col-md-4">
                         <button type="submit" class="btn btn-primary btn-sm w-100" [disabled]="loadingSearch">
                             <span *ngIf="loadingSearch" class="spinner-border spinner-border-sm me-1"></span>
                             <span *ngIf="!loadingSearch">Buscar</span>
@@ -291,6 +398,27 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Filtro Status da Parcela -->
+                        <div class="col-12 col-md-2" formGroupName="status_parcela">
+                            <label class="form-label small fw-semibold text-uppercase">Parcela</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="statusLiquidado"
+                                        formControlName="liquidado">
+                                    <label class="form-check-label small" for="statusLiquidado">Liquidado</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="statusPendente"
+                                        formControlName="pendente">
+                                    <label class="form-check-label small" for="statusPendente">Pendente</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="statusCancelado"
+                                        formControlName="cancelado">
+                                    <label class="form-check-label small" for="statusCancelado">Cancelado</label>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Filtro Porcentagem Paga Até -->
                         <div class="col-12 col-md-2">
                             <label class="form-label small fw-semibold text-uppercase">% Paga Até</label>
@@ -325,6 +453,13 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="fw-bold mb-0">Parcelas Disponíveis <span class="badge bg-info">{{
                             parcelasDisponiveisFilteradas.length }}</span></h6>
+                    <div class="text-end me-2" *ngIf="quantidadeMarcadaFiltrada > 0">
+                        <div class="small text-muted">Total marcado (lista filtrada)</div>
+                        <div class="fw-bold" [ngClass]="{ 'text-success': totalMarcadoFiltrado >= 0, 'text-danger': totalMarcadoFiltrado < 0 }">
+                            {{ totalMarcadoFiltrado | moneyBrl }}
+                            <span class="badge bg-secondary ms-1">{{ quantidadeMarcadaFiltrada }}</span>
+                        </div>
+                    </div>
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-sm btn-info" (click)="exportarCSV()"
                             *ngIf="parcelasDisponiveisFilteradas.length > 0"
@@ -369,10 +504,10 @@
                             <tr *ngFor="let item of parcelasDisponiveisFilteradas">
                                 <td>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" [id]="'check-' + item._id"
-                                            [checked]="isParcelasSelecionada(item._id)"
-                                            (change)="toggleSelecionarParcela(item._id)">
-                                        <label class="form-check-label" [for]="'check-' + item._id"></label>
+                                        <input class="form-check-input" type="checkbox" [id]="'check-' + item.parcelas._id"
+                                            [checked]="isParcelasSelecionada(item.parcelas._id)"
+                                            (change)="toggleSelecionarParcela(item.parcelas._id)">
+                                        <label class="form-check-label" [for]="'check-' + item.parcelas._id"></label>
                                     </div>
                                 </td>
                                 <td class="text-uppercase">

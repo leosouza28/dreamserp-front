@@ -47,7 +47,7 @@
                         <dd class="col-7">{{ dados.origem }}</dd>
 
                         <dt class="col-5 text-muted">% Recebida</dt>
-                        <dd class="col-7">{{ dados.valedasminas_porcentagem_paga }}%</dd>
+                        <dd class="col-7">{{ (dados.valedasminas_porcentagem_paga || 0)?.toFixed(2) }}%</dd>
 
                     </dl>
                 </div>
@@ -219,11 +219,24 @@
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <h6 class="fw-bold text-uppercase text-secondary mb-0">Parcelas ({{ dados.parcelas.length }})
                         </h6>
-                        <button class="btn btn-sm btn-outline-danger" *ngIf="selected.size > 0"
-                            [disabled]="loadingCancel" (click)="abrirModalCancelarSelecionadas()">
-                            <span *ngIf="loadingCancel" class="spinner-border spinner-border-sm me-1"></span>
-                            Cancelar selecionadas ({{ selected.size }})
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-success" [disabled]="loadingEdit"
+                                (click)="abrirModalCriarParcela()">
+                                <i class="bi bi-plus-lg me-1"></i>
+                                Criar Parcela
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" *ngIf="selected.size > 0"
+                                [disabled]="loadingCancel" (click)="abrirModalCancelarSelecionadas()">
+                                <span *ngIf="loadingCancel" class="spinner-border spinner-border-sm me-1"></span>
+                                Cancelar selecionadas ({{ selected.size }})
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" *ngIf="selected.size > 0"
+                                [disabled]="loadingDelete" (click)="abrirModalExcluirSelecionadas()">
+                                <span *ngIf="loadingDelete" class="spinner-border spinner-border-sm me-1"></span>
+                                <i class="bi bi-trash me-1"></i>
+                                Excluir selecionadas ({{ selected.size }})
+                            </button>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered mb-0">
@@ -240,7 +253,7 @@
                                     <th class="text-end">Vencimento</th>
                                     <th class="text-end">Recebimento</th>
                                     <th class="text-end">Valor</th>
-                                    <th class="text-center" style="width: 90px;">Ações</th>
+                                    <th class="text-center" style="width: 150px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody class="small">
@@ -274,17 +287,29 @@
                                         <render-badge [badgeText]="p.status"></render-badge>
                                     </td>
                                     <td class="text-end">{{ p.data_vencimento | dateSimple }}</td>
-                                    <td class="text-end">{{ p.data_recebimento | dateSimple }}</td>
+                                    <td class="text-end">
+                                        <span *ngIf="p.bordero?._id">(B)</span>
+                                        {{ p.data_recebimento | dateSimple }}</td>
                                     <td class="text-end fw-semibold">{{ p.valor_parcela | moneyBrl }}</td>
                                     <td class="text-center">
                                         <button class="btn btn-xs btn-outline-primary py-0 px-1 me-1" title="Editar"
                                             (click)="abrirModalEditar(p)">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button class="btn btn-xs btn-outline-danger py-0 px-1" title="Cancelar"
+                                        <button class="btn btn-xs btn-outline-info py-0 px-1 me-1" title="Duplicar"
+                                            [disabled]="loadingEdit"
+                                            (click)="abrirModalDuplicarParcela(p)">
+                                            <i class="bi bi-files"></i>
+                                        </button>
+                                        <button class="btn btn-xs btn-outline-danger py-0 px-1 me-1" title="Cancelar"
                                             [disabled]="loadingCancel || p.status === 'CANCELADO'"
                                             (click)="abrirModalCancelarParcela(p)">
                                             <i class="bi bi-x-lg"></i>
+                                        </button>
+                                        <button class="btn btn-xs btn-outline-danger py-0 px-1" title="Excluir"
+                                            [disabled]="loadingDelete"
+                                            (click)="abrirModalExcluirParcela(p)">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -312,6 +337,56 @@
 <div *ngIf="loading" class="d-flex justify-content-center py-5">
     <span class="spinner-border text-primary"></span>
 </div>
+
+<!-- Modal Excluir Parcela(s) -->
+<ng-template #modalExcluirParcela let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title text-danger">
+            <i class="bi bi-trash me-2"></i>
+            {{ deleteMode === 'single' ? 'Excluir parcela' : 'Excluir parcelas selecionadas' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()" [disabled]="loadingDelete"></button>
+    </div>
+    <div class="modal-body">
+        <div class="alert alert-danger d-flex gap-2 align-items-start small py-2">
+            <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+            <span>Esta ação é <strong>irreversível</strong>. As parcelas abaixo serão permanentemente removidas.</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle mb-0">
+                <thead>
+                    <tr class="text-uppercase small">
+                        <th>Tipo</th>
+                        <th class="text-center">Parcela</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Vencimento</th>
+                        <th class="text-end">Valor</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    <tr *ngFor="let p of parcelasParaExcluir">
+                        <td>{{ p.tipo }}</td>
+                        <td class="text-center">{{ p.label_parcelas }}</td>
+                        <td class="text-center"><render-badge [badgeText]="p.status"></render-badge></td>
+                        <td class="text-end">{{ p.data_vencimento | dateSimple }}</td>
+                        <td class="text-end fw-semibold">{{ p.valor_parcela | moneyBrl }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.dismiss()"
+            [disabled]="loadingDelete">Cancelar</button>
+        <button type="button" class="btn btn-danger btn-sm" [disabled]="loadingDelete"
+            (click)="confirmarExclusao()">
+            <span *ngIf="loadingDelete" class="spinner-border spinner-border-sm me-1"></span>
+            <i class="bi bi-trash me-1" *ngIf="!loadingDelete"></i>
+            Confirmar exclusão
+        </button>
+    </div>
+</ng-template>
 
 <!-- Modal Cancelar Parcela(s) -->
 <ng-template #modalCancelarParcela let-modal>
@@ -372,22 +447,72 @@
     </div>
 </ng-template>
 
-<!-- Modal Editar Parcela -->
+<!-- Modal Excluir Parcela(s) -->
+<ng-template #modalExcluirParcela let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title text-danger">
+            <i class="bi bi-trash me-2"></i>
+            {{ deleteMode === 'single' ? 'Excluir parcela' : 'Excluir parcelas selecionadas' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()" [disabled]="loadingDelete"></button>
+    </div>
+    <div class="modal-body">
+        <div class="alert alert-danger d-flex gap-2 align-items-start small py-2">
+            <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+            <span>Esta ação é <strong>irreversível</strong>. As parcelas abaixo serão permanentemente removidas.</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle mb-0">
+                <thead>
+                    <tr class="text-uppercase small">
+                        <th>Tipo</th>
+                        <th class="text-center">Parcela</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Vencimento</th>
+                        <th class="text-end">Valor</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    <tr *ngFor="let p of parcelasParaExcluir">
+                        <td>{{ p.tipo }}</td>
+                        <td class="text-center">{{ p.label_parcelas }}</td>
+                        <td class="text-center"><render-badge [badgeText]="p.status"></render-badge></td>
+                        <td class="text-end">{{ p.data_vencimento | dateSimple }}</td>
+                        <td class="text-end fw-semibold">{{ p.valor_parcela | moneyBrl }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.dismiss()"
+            [disabled]="loadingDelete">Cancelar</button>
+        <button type="button" class="btn btn-danger btn-sm" [disabled]="loadingDelete"
+            (click)="confirmarExclusao()">
+            <span *ngIf="loadingDelete" class="spinner-border spinner-border-sm me-1"></span>
+            <i class="bi bi-trash me-1" *ngIf="!loadingDelete"></i>
+            Confirmar exclusão
+        </button>
+    </div>
+</ng-template>
+
+<!-- Modal Editar/Criar Parcela -->
 <ng-template #modalEditarParcela let-modal>
     <div class="modal-header">
-        <h5 class="modal-title">Editar Parcela</h5>
-        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        <h5 class="modal-title">{{ parcelaMode === 'criar' ? 'Criar Nova Parcela' : 'Editar Parcela' }}</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()" [disabled]="loadingEdit"></button>
     </div>
     <div class="modal-body" [formGroup]="editForm">
 
-        <div class="alert alert-warning d-flex gap-2 align-items-start small py-2">
+        <div class="alert alert-warning d-flex gap-2 align-items-start small py-2" *ngIf="parcelaMode === 'editar'">
             <i class="bi bi-exclamation-triangle-fill mt-1"></i>
             <span>Após editar esta parcela, ela <strong>não será mais sincronizada automaticamente</strong> com a fonte
                 de dados.</span>
         </div>
 
         <div class="alert alert-info d-flex gap-2 align-items-start small py-2"
-            *ngIf="parcelaEditando?.alterado_por as alteracao">
+            *ngIf="parcelaMode === 'editar' && parcelaEditando?.alterado_por as alteracao">
             <i class="bi bi-clock-history mt-1"></i>
             <span>
                 Última alteração em <strong>{{ alteracao.data_hora | date: 'dd/MM/yyyy HH:mm' }}</strong>
@@ -397,9 +522,16 @@
         </div>
 
         <div class="row g-2">
+            <div class="col-12">
+                <label class="form-label small fw-semibold text-uppercase">ID da Parcela</label>
+                <input type="text" class="form-control form-control-sm" formControlName="id_parcela"
+                    [readOnly]="parcelaMode === 'editar'"
+                    placeholder="Ex: PAR001">
+            </div>
             <div class="col-12 col-md-6">
                 <label class="form-label small fw-semibold text-uppercase">Tipo</label>
                 <select class="form-select form-select-sm" formControlName="tipo">
+                    <option value="">Selecione</option>
                     <option *ngFor="let t of TIPOS" [value]="t">{{ t }}</option>
                 </select>
             </div>
@@ -413,8 +545,24 @@
             <div class="col-12 col-md-6">
                 <label class="form-label small fw-semibold text-uppercase">Status</label>
                 <select class="form-select form-select-sm" formControlName="status">
+                    <option value="">Selecione</option>
                     <option *ngFor="let s of STATUS_OPCOES" [value]="s">{{ s }}</option>
                 </select>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label small fw-semibold text-uppercase">Número da Parcela</label>
+                <input type="number" class="form-control form-control-sm" formControlName="parcela"
+                    placeholder="Ex: 1" min="1">
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label small fw-semibold text-uppercase">Total de Parcelas</label>
+                <input type="number" class="form-control form-control-sm" formControlName="total_parcelas"
+                    placeholder="Ex: 12" min="1">
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label small fw-semibold text-uppercase">Label da Parcela</label>
+                <input type="text" class="form-control form-control-sm" formControlName="label_parcelas"
+                    placeholder="Ex: 1/12">
             </div>
             <div class="col-12 col-md-6">
                 <label class="form-label small fw-semibold text-uppercase">Valor (R$)</label>
@@ -428,18 +576,19 @@
             <div class="col-12 col-md-6">
                 <label class="form-label small fw-semibold text-uppercase">Data de Liquidação</label>
                 <input type="date" class="form-control form-control-sm" formControlName="data_recebimento"
-                    [disabled]="!isEditStatusLiquidado">
-                <small class="text-muted" *ngIf="!isEditStatusLiquidado">Disponível apenas quando o status for
+                    [disabled]="editForm.get('status')?.value !== 'LIQUIDADO'">
+                <small class="text-muted" *ngIf="editForm.get('status')?.value !== 'LIQUIDADO'">Disponível apenas quando o status for
                     LIQUIDADO.</small>
             </div>
         </div>
 
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.dismiss()">Cancelar</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.dismiss()"
+            [disabled]="loadingEdit">Cancelar</button>
         <button type="button" class="btn btn-primary btn-sm" [disabled]="loadingEdit" (click)="salvarEdicao()">
             <span *ngIf="loadingEdit" class="spinner-border spinner-border-sm me-1"></span>
-            Salvar
+            {{ parcelaMode === 'criar' ? 'Criar Parcela' : 'Salvar' }}
         </button>
     </div>
 </ng-template>
