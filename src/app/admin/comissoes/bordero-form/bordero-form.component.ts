@@ -1,6 +1,6 @@
 import { Component, inject, isDevMode, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AlertService } from 'src/app/services/alert.service';
 import { EndpointsService } from 'src/app/services/endpoints.service';
 import { Subject } from 'rxjs';
@@ -27,6 +27,7 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
   private fb: FormBuilder = inject(FormBuilder);
   private activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   private api = inject(EndpointsService);
+  private router = inject(Router);
   private alert = inject(AlertService);
   private destroy$ = new Subject<void>();
   private atualizarParcelas$ = new Subject<void>();
@@ -217,6 +218,11 @@ export class BorderoFormComponent implements OnInit, OnDestroy {
 
       await this.api.setBordero(value);
       this.alert.showSuccess("Borderô salvo com sucesso!");
+
+      if (!value._id) {
+        // atualiza a rota com esse novo _id
+        this.router.navigate(['/admin/comissoes/bordero/form', value._id], { replaceUrl: true });
+      }
     } catch (error: any) {
       this.alert.showDanger(error);
     } finally {
