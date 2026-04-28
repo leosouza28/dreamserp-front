@@ -191,7 +191,14 @@ export class AdminContainerComponent implements OnInit {
       {
         icon: 'bi bi-printer me-2',
         nome: 'Relatórios',
-        submenu: [],
+        submenu: [
+          {
+            scopes: ["relatorios.comissoes_renegociadas_leitura"],
+            icon: 'bi bi-percent me-2',
+            nome: 'Comissões Renegociadas',
+            link: '/admin/relatorios/comissoes-renegociadas'
+          }
+        ],
         open: false,
       },
     ];

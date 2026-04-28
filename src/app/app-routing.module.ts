@@ -23,6 +23,7 @@ import { BorderoFormComponent } from "./admin/comissoes/bordero-form/bordero-for
 import { ListarCrmComponent } from './admin/crm/listar-crm/listar-crm.component';
 import { FormCrmComponent } from './admin/crm/form-crm/form-crm.component';
 import { PreviewBorderoComponent } from "./admin/comissoes/preview-bordero/preview-bordero.component";
+import { RelComissoesRenegociadasComponent } from "./admin/relatorios/rel-comissoes-renegociadas/rel-comissoes-renegociadas.component";
 
 const routes: Routes = [
   {
@@ -144,7 +145,12 @@ const routes: Routes = [
       },
       {
         path: "relatorios",
-        children: []
+        children: [
+          {
+            path: "comissoes-renegociadas",
+            component: RelComissoesRenegociadasComponent
+          }
+        ]
       },
       {
         path: "logoff",

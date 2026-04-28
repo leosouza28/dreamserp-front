@@ -5,6 +5,7 @@ import packageJson from '../../../package.json';
 import { SessaoService } from './sessao.service';
 import { Router } from '@angular/router';
 
+import { v4 } from 'uuid'
 @Injectable({
     providedIn: 'root'
 })
@@ -170,6 +171,69 @@ export class ApiService {
 
     delay(timer = 3000) {
         return new Promise(resolve => setTimeout(resolve, timer));
+    }
+
+    openReportWindow(htmlContent: string) {
+        const reportWindow = window.open('', '_blank');
+        if (reportWindow) {
+            reportWindow.document.open();
+            reportWindow.document.write(htmlContent);
+            reportWindow.document.close();
+        } else {
+            console.error('Não foi possível abrir uma nova janela para o relatório.');
+        }
+    }
+
+    handleRelatorio(output: string, data: any, filename: string = v4()) {
+        switch (output) {
+            case 'html':
+                let text = '';
+                if (data instanceof Blob) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        text = event.target?.result as string;
+                        this.openReportWindow(text);
+                    };
+                    reader.readAsText(data);
+                } else {
+                    text = data;
+                    this.openReportWindow(text);
+                }
+                break;
+
+            case 'pdf':
+                const pdfBlob = new Blob([data], { type: 'application/pdf' });
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+                const pdfLink = document.createElement('a');
+                pdfLink.href = pdfUrl;
+                pdfLink.download = `${filename}.pdf`; // nome do arquivo baixado
+                pdfLink.click();
+                setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+                break;
+
+            case 'xlsx':
+                const xlsxBlob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const xlsxUrl = URL.createObjectURL(xlsxBlob);
+                const xlsxLink = document.createElement('a');
+                xlsxLink.href = xlsxUrl;
+                xlsxLink.download = `${filename}.xlsx`; // nome do arquivo baixado
+                xlsxLink.click();
+                setTimeout(() => URL.revokeObjectURL(xlsxUrl), 1000);
+                break;
+
+            case 'csv':
+                const csvBlob = new Blob([data], { type: 'text/csv' });
+                const csvUrl = URL.createObjectURL(csvBlob);
+                const csvLink = document.createElement('a');
+                csvLink.href = csvUrl;
+                csvLink.download = `${filename}.csv`; // nome do arquivo baixado
+                csvLink.click();
+                setTimeout(() => URL.revokeObjectURL(csvUrl), 1000);
+                break;
+
+            default:
+                break;
+        }
     }
 
 }

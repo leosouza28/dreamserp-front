@@ -58,6 +58,7 @@ import { ListarCrmComponent } from './admin/crm/listar-crm/listar-crm.component'
 import { FormCrmComponent } from './admin/crm/form-crm/form-crm.component';
 import { DateRangePickerComponent } from './components/date-range-picker/date-range-picker.component';
 import { PreviewBorderoComponent } from './admin/comissoes/preview-bordero/preview-bordero.component';
+import { RelComissoesRenegociadasComponent } from './admin/relatorios/rel-comissoes-renegociadas/rel-comissoes-renegociadas.component';
 
 registerLocaleData(localePt, 'pt-BR');
 
@@ -109,6 +110,7 @@ LOAD_WASM('assets/wasm/ngx-scanner-qrcode.wasm').subscribe();
     FormCrmComponent,
     DateRangePickerComponent,
     PreviewBorderoComponent,
+    RelComissoesRenegociadasComponent,
   ],
   imports: [
     BrowserModule,
